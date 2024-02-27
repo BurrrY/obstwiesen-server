@@ -11,7 +11,18 @@ type Meadow {
 type Tree {
   id: ID!
   name: String!
+  lat: Float
+  lang: Float
+  events: [Event]!
 }
+
+type Event {
+  id: ID!
+  title: String!
+  description: String!
+  timestamp: String!
+}
+
 
 input NewMeadow {
   name: String!
@@ -22,11 +33,22 @@ input NewTree {
   meadowID: String!
 }
 
+
+input NewEvent {
+  treeID: String!
+  title: String!
+  description: String!
+}
+
+
 type Mutation {
   createMeadow(input: NewMeadow!): Meadow!
   createTree(input: NewTree!): Tree!
+  createEvent(input: NewEvent!): Event!
 }
 
 type Query {
   meadows: [Meadow!]!
+  trees(meadow_id: String!): [Tree!]!
+  events(tree_id: String!): [Event!]!
 }

@@ -6,43 +6,90 @@ package graph
 
 import (
 	"context"
-	"crypto/rand"
-	"fmt"
-	"math/big"
+	"time"
 
 	"github.com/BurrrY/obstwiesen-server/graph/model"
+	gonanoid "github.com/matoous/go-nanoid/v2"
 )
+
+// Trees is the resolver for the trees field.
+func (r *meadowResolver) Trees(ctx context.Context, obj *model.Meadow) ([]*model.Tree, error) {
+	var meadows []*model.Tree
+	meadows, err := storage.GetTreesOfMeadow(obj.ID)
+	return meadows, err
+}
 
 // CreateMeadow is the resolver for the createMeadow field.
 func (r *mutationResolver) CreateMeadow(ctx context.Context, input model.NewMeadow) (*model.Meadow, error) {
-	randNumber, _ := rand.Int(rand.Reader, big.NewInt(100))
+	id, _ := gonanoid.New()
+
 	meadow := &model.Meadow{
-		ID:    fmt.Sprintf("T%d", randNumber),
+		ID:    id,
 		Name:  input.Name,
 		Trees: nil,
 	}
 	storage.StoreMeadow(meadow)
-	r.meadows = append(r.meadows, meadow)
 	return meadow, nil
 }
 
 // CreateTree is the resolver for the createTree field.
 func (r *mutationResolver) CreateTree(ctx context.Context, input model.NewTree) (*model.Tree, error) {
-	randNumber, _ := rand.Int(rand.Reader, big.NewInt(100))
+	id, _ := gonanoid.New()
 
 	tree := &model.Tree{
-		ID:   fmt.Sprintf("T%d", randNumber),
+		ID:   id,
 		Name: input.Name,
 	}
 
-	r.meadows[0].Trees = append(r.meadows[0].Trees, tree)
+	storage.AddTree(tree, input.MeadowID)
 	return tree, nil
+}
+
+// CreateEvent is the resolver for the createEvent field.
+func (r *mutationResolver) CreateEvent(ctx context.Context, input model.NewEvent) (*model.Event, error) {
+	id, _ := gonanoid.New()
+
+	elemnt := &model.Event{
+		ID:          id,
+		Title:       input.Title,
+		Description: input.Description,
+		Timestamp:   time.Now().Format(time.RFC3339),
+	}
+
+	err := storage.AddEvent(elemnt, input.TreeID)
+	return elemnt, err
 }
 
 // Meadows is the resolver for the meadows field.
 func (r *queryResolver) Meadows(ctx context.Context) ([]*model.Meadow, error) {
-	return r.meadows, nil
+	var meadows []*model.Meadow
+	meadows, err := storage.GetMeadows()
+	return meadows, err
 }
+
+// Trees is the resolver for the trees field.
+func (r *queryResolver) Trees(ctx context.Context, meadowID string) ([]*model.Tree, error) {
+	var meadows []*model.Tree
+	meadows, err := storage.GetTreesOfMeadow(meadowID)
+	return meadows, err
+}
+
+// Events is the resolver for the events field.
+func (r *queryResolver) Events(ctx context.Context, treeID string) ([]*model.Event, error) {
+	var elem []*model.Event
+	elem, err := storage.GetEventsOfTree(treeID)
+	return elem, err
+}
+
+// Events is the resolver for the events field.
+func (r *treeResolver) Events(ctx context.Context, obj *model.Tree) ([]*model.Event, error) {
+	var elem []*model.Event
+	elem, err := storage.GetEventsOfTree(obj.ID)
+	return elem, err
+}
+
+// Meadow returns MeadowResolver implementation.
+func (r *Resolver) Meadow() MeadowResolver { return &meadowResolver{r} }
 
 // Mutation returns MutationResolver implementation.
 func (r *Resolver) Mutation() MutationResolver { return &mutationResolver{r} }
@@ -50,5 +97,10 @@ func (r *Resolver) Mutation() MutationResolver { return &mutationResolver{r} }
 // Query returns QueryResolver implementation.
 func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
 
+// Tree returns TreeResolver implementation.
+func (r *Resolver) Tree() TreeResolver { return &treeResolver{r} }
+
+type meadowResolver struct{ *Resolver }
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
+type treeResolver struct{ *Resolver }

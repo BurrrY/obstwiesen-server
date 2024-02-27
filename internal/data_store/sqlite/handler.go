@@ -2,7 +2,6 @@ package sqlite
 
 import (
 	"errors"
-	"github.com/BurrrY/obstwiesen-server/graph/model"
 	_ "github.com/mattn/go-sqlite3"
 
 	"github.com/jmoiron/sqlx"
@@ -15,11 +14,6 @@ type stor struct {
 	ConnectionError  error
 }
 
-func (m stor) StoreMeadow(meadow *model.Meadow) {
-	//TODO implement me
-	panic("implement me")
-}
-
 var db *sqlx.DB
 var Connection stor
 
@@ -30,7 +24,7 @@ func (m stor) GetType() string {
 func init() {
 
 	if os.Getenv("PROVIDER") != "sqlite" {
-		log.New().Info("Skip maria Init by Config: " + os.Getenv("PROVIDER"))
+		log.New().Info("Skip sqlite Init by Config: " + os.Getenv("PROVIDER"))
 		Connection.ConnectionError = errors.New("sqlite disabled")
 		return
 	}
