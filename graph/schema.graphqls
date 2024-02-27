@@ -1,0 +1,32 @@
+# GraphQL schema example
+#
+# https://gqlgen.com/getting-started/
+
+type Meadow {
+  id: ID!
+  name: String!
+  trees: [Tree!]!
+}
+
+type Tree {
+  id: ID!
+  name: String!
+}
+
+input NewMeadow {
+  name: String!
+}
+
+input NewTree {
+  name: String!
+  meadowID: String!
+}
+
+type Mutation {
+  createMeadow(input: NewMeadow!): Meadow!
+  createTree(input: NewTree!): Tree!
+}
+
+type Query {
+  meadows: [Meadow!]!
+}
