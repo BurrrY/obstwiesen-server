@@ -75,13 +75,13 @@ func updateDb() {
 		log.Warning("DB-Update: ", history[i])
 		_, err = db.Exec(history[i])
 		if err != nil {
-			log.Warning("DB-Update-Err: ", err)
+			log.Error("DB-Update-Err: ", err)
 			return
 		}
 	}
-	t := time.Now()
-	_, err = db.Exec("INSERT INTO version (version, timestamp) VALUES (?, ?)", i, t.Format(time.DateTime))
+
+	_, err = db.Exec("INSERT INTO version (version, timestamp) VALUES (?, ?)", i, time.Now().Format(time.RFC3339))
 	if err != nil {
-		log.Warning("INSERT: ", err)
+		log.Error("INSERT: ", err)
 	}
 }
