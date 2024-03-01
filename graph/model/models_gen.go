@@ -14,7 +14,7 @@ type Meadow struct {
 	ID     string   `json:"id"`
 	Name   string   `json:"name"`
 	Trees  []*Tree  `json:"trees"`
-	Events []*Event `json:"events"`
+	Events []*Event `json:"events,omitempty"`
 }
 
 type Mutation struct {
@@ -44,5 +44,5 @@ type Tree struct {
 	Name   string   `json:"name"`
 	Lat    *float64 `json:"lat,omitempty"`
 	Lang   *float64 `json:"lang,omitempty"`
-	Events []*Event `json:"events"`
+	Events []*Event `json:"events,omitempty"`
 }

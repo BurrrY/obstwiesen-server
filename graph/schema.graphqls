@@ -6,7 +6,7 @@ type Meadow {
   id: ID!
   name: String!
   trees: [Tree!]!
-  events: [Event]!
+  events: [Event!]
 }
 
 type Tree {
@@ -14,7 +14,7 @@ type Tree {
   name: String!
   lat: Float
   lang: Float
-  events: [Event]!
+  events: [Event!]
 }
 
 type Event {
