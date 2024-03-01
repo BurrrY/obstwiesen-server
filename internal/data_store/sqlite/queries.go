@@ -57,7 +57,7 @@ func (m stor) GetTreeByID(id string) (*model.Tree, error) {
 func (m stor) GetEventsOfTree(id string) ([]*model.Event, error) {
 
 	data := []*model.Event{}
-	err := db.Select(&data, "SELECT id, title, description, timestamp FROM events WHERE tree_id = ?", id)
+	err := db.Select(&data, "SELECT id, title, description, timestamp FROM events WHERE parent_id = ?", id)
 
 	return data, err
 }
