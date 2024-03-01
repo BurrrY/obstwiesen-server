@@ -70,6 +70,7 @@ type ComplexityRoot struct {
 
 	Query struct {
 		Events  func(childComplexity int, treeID string) int
+		Meadow  func(childComplexity int, meadowID string) int
 		Meadows func(childComplexity int) int
 		Trees   func(childComplexity int, meadowID string) int
 	}
@@ -92,6 +93,7 @@ type MutationResolver interface {
 	CreateEvent(ctx context.Context, input model.NewEvent) (*model.Event, error)
 }
 type QueryResolver interface {
+	Meadow(ctx context.Context, meadowID string) (*model.Meadow, error)
 	Meadows(ctx context.Context) ([]*model.Meadow, error)
 	Trees(ctx context.Context, meadowID string) ([]*model.Tree, error)
 	Events(ctx context.Context, treeID string) ([]*model.Event, error)
@@ -215,6 +217,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.Events(childComplexity, args["tree_id"].(string)), true
+
+	case "Query.meadow":
+		if e.complexity.Query.Meadow == nil {
+			break
+		}
+
+		args, err := ec.field_Query_meadow_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Meadow(childComplexity, args["meadow_id"].(string)), true
 
 	case "Query.meadows":
 		if e.complexity.Query.Meadows == nil {
@@ -469,6 +483,21 @@ func (ec *executionContext) field_Query_events_args(ctx context.Context, rawArgs
 		}
 	}
 	args["tree_id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_meadow_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["meadow_id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("meadow_id"))
+		arg0, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["meadow_id"] = arg0
 	return args, nil
 }
 
@@ -1034,6 +1063,66 @@ func (ec *executionContext) fieldContext_Mutation_createEvent(ctx context.Contex
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_createEvent_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_meadow(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_meadow(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Meadow(rctx, fc.Args["meadow_id"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.Meadow)
+	fc.Result = res
+	return ec.marshalOMeadow2ᚖgithubᚗcomᚋBurrrYᚋobstwiesenᚑserverᚋgraphᚋmodelᚐMeadow(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_meadow(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Meadow_id(ctx, field)
+			case "name":
+				return ec.fieldContext_Meadow_name(ctx, field)
+			case "trees":
+				return ec.fieldContext_Meadow_trees(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Meadow", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_meadow_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -3676,6 +3765,25 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Query")
+		case "meadow":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_meadow(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
 		case "meadows":
 			field := field
 
@@ -4755,6 +4863,13 @@ func (ec *executionContext) marshalOFloat2ᚖfloat64(ctx context.Context, sel as
 	}
 	res := graphql.MarshalFloatContext(*v)
 	return graphql.WrapContextMarshaler(ctx, res)
+}
+
+func (ec *executionContext) marshalOMeadow2ᚖgithubᚗcomᚋBurrrYᚋobstwiesenᚑserverᚋgraphᚋmodelᚐMeadow(ctx context.Context, sel ast.SelectionSet, v *model.Meadow) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Meadow(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOString2ᚖstring(ctx context.Context, v interface{}) (*string, error) {

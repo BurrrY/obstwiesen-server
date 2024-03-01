@@ -60,6 +60,13 @@ func (r *mutationResolver) CreateEvent(ctx context.Context, input model.NewEvent
 	return elemnt, err
 }
 
+// Meadow is the resolver for the meadow field.
+func (r *queryResolver) Meadow(ctx context.Context, meadowID string) (*model.Meadow, error) {
+	var meadow *model.Meadow
+	meadow, err := storage.GetMeadowByID(meadowID)
+	return meadow, err
+}
+
 // Meadows is the resolver for the meadows field.
 func (r *queryResolver) Meadows(ctx context.Context) ([]*model.Meadow, error) {
 	var meadows []*model.Meadow

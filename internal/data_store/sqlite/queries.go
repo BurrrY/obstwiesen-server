@@ -57,3 +57,13 @@ func (m stor) GetMeadows() ([]*model.Meadow, error) {
 
 	return meadows, err
 }
+
+func (m stor) GetMeadowByID(id string) (*model.Meadow, error) {
+	meadow := model.Meadow{}
+	err := db.Get(&meadow, "SELECT id, name FROM meadows WHERE id = ?", id)
+	if err != nil {
+		log.Warning("GetMeadowByID", err)
+	}
+
+	return &meadow, err
+}

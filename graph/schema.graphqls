@@ -48,6 +48,7 @@ type Mutation {
 }
 
 type Query {
+  meadow(meadow_id: ID!): Meadow
   meadows: [Meadow!]!
   trees(meadow_id: String!): [Tree!]!
   events(tree_id: String!): [Event!]!
