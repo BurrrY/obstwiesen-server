@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"github.com/BurrrY/obstwiesen-server/internal/data_store/mysql"
 	"github.com/BurrrY/obstwiesen-server/internal/data_store/sqlite"
 	log "github.com/sirupsen/logrus"
 	"os"
@@ -13,6 +14,8 @@ func GetProvider() (*Storage, error) {
 
 	if dbProvider == "sqlite" {
 		result = &sqlite.Connection
+	} else if dbProvider == "mysql" {
+		result = &mysql.Connection
 	} else {
 		log.WithFields(log.Fields{
 			"connectionData": dbProvider,
