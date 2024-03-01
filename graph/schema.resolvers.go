@@ -6,10 +6,10 @@ package graph
 
 import (
 	"context"
-	"time"
 
 	"github.com/BurrrY/obstwiesen-server/graph/model"
 	gonanoid "github.com/matoous/go-nanoid/v2"
+	log "github.com/sirupsen/logrus"
 )
 
 // Trees is the resolver for the trees field.
@@ -53,10 +53,10 @@ func (r *mutationResolver) CreateEvent(ctx context.Context, input model.NewEvent
 		ID:          id,
 		Title:       input.Title,
 		Description: input.Description,
-		Timestamp:   time.Now().Format(time.RFC3339),
+		Timestamp:   input.Timestamp,
 	}
 
-	err := storage.AddEvent(elemnt, input.TreeID)
+	err := storage.AddEvent(elemnt, input.ParentID)
 	return elemnt, err
 }
 
@@ -76,9 +76,17 @@ func (r *queryResolver) Meadows(ctx context.Context) ([]*model.Meadow, error) {
 
 // Trees is the resolver for the trees field.
 func (r *queryResolver) Trees(ctx context.Context, meadowID string) ([]*model.Tree, error) {
-	var meadows []*model.Tree
-	meadows, err := storage.GetTreesOfMeadow(meadowID)
-	return meadows, err
+	var trees []*model.Tree
+	trees, err := storage.GetTreesOfMeadow(meadowID)
+	return trees, err
+}
+
+// Tree is the resolver for the tree field.
+func (r *queryResolver) Tree(ctx context.Context, treeID string) (*model.Tree, error) {
+	var tree *model.Tree
+	log.Info("Tree requestd", treeID)
+	tree, err := storage.GetTreeByID(treeID)
+	return tree, err
 }
 
 // Events is the resolver for the events field.

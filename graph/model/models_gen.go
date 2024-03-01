@@ -4,24 +4,27 @@ package model
 
 type Event struct {
 	ID          string `json:"id"`
+	ParentID    string `json:"parentID"`
 	Title       string `json:"title"`
 	Description string `json:"description"`
 	Timestamp   string `json:"timestamp"`
 }
 
 type Meadow struct {
-	ID    string  `json:"id"`
-	Name  string  `json:"name"`
-	Trees []*Tree `json:"trees"`
+	ID     string   `json:"id"`
+	Name   string   `json:"name"`
+	Trees  []*Tree  `json:"trees"`
+	Events []*Event `json:"events"`
 }
 
 type Mutation struct {
 }
 
 type NewEvent struct {
-	TreeID      string `json:"treeID"`
+	ParentID    string `json:"parentID"`
 	Title       string `json:"title"`
 	Description string `json:"description"`
+	Timestamp   string `json:"timestamp"`
 }
 
 type NewMeadow struct {

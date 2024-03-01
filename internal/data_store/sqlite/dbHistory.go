@@ -32,9 +32,7 @@ alter table trees
     id      TEXT
         constraint events_pk
             primary key,
-    tree_id TEXT
-        constraint events_trees_id_fk
-            references trees
+    parent_id TEXT
 );
 
 `,
