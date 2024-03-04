@@ -27,7 +27,7 @@ func (m stor) AddEvent(elemnt *model.Event, id string) error {
 
 func (m stor) AddTree(tree *model.Tree, id string) {
 	_, err := db.Exec("INSERT INTO trees ( id, name, meadow_id, created_at) VALUES (?, ?, ?, ?)",
-		tree.ID, tree.Name, id, time.Now().Format(time.RFC3339))
+		tree.ID, tree.Name, id, time.Now().Format("2006-01-02T15:04:05"))
 	if err != nil {
 		log.Warning("Error in AddTree: ", err)
 		return

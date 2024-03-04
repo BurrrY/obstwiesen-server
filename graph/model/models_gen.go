@@ -2,12 +2,23 @@
 
 package model
 
+import (
+	"github.com/99designs/gqlgen/graphql"
+)
+
 type Event struct {
-	ID          string `json:"id"`
-	ParentID    string `json:"parentID"`
-	Title       string `json:"title"`
-	Description string `json:"description"`
-	Timestamp   string `json:"timestamp"`
+	ID          string  `json:"id"`
+	ParentID    string  `json:"parentID"`
+	Title       string  `json:"title"`
+	Description string  `json:"description"`
+	Timestamp   string  `json:"timestamp"`
+	Files       []*File `json:"files,omitempty"`
+}
+
+// The `File` type, represents the response of uploading a file.
+type File struct {
+	ParentID string `json:"parentID"`
+	Path     string `json:"path"`
 }
 
 type Meadow struct {
@@ -21,10 +32,11 @@ type Mutation struct {
 }
 
 type NewEvent struct {
-	ParentID    string `json:"parentID"`
-	Title       string `json:"title"`
-	Description string `json:"description"`
-	Timestamp   string `json:"timestamp"`
+	ParentID    string            `json:"parentID"`
+	Title       string            `json:"title"`
+	Timestamp   string            `json:"timestamp"`
+	Description *string           `json:"description,omitempty"`
+	Files       []*graphql.Upload `json:"files,omitempty"`
 }
 
 type NewMeadow struct {
@@ -45,4 +57,10 @@ type Tree struct {
 	Lat    *float64 `json:"lat,omitempty"`
 	Lang   *float64 `json:"lang,omitempty"`
 	Events []*Event `json:"events,omitempty"`
+}
+
+// The `UploadFile` type, represents the request for uploading a file with a certain payload.
+type UploadFile struct {
+	ID   int            `json:"id"`
+	File graphql.Upload `json:"file"`
 }

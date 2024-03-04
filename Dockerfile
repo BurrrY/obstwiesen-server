@@ -1,14 +1,16 @@
-FROM golang:1.22
+FROM golang:1.22 AS builder
 
 WORKDIR /src
 
-COPY ./ /
+COPY ./ /src
 
-RUN go build -o /bin/obstwiese ./server.go
+#RUN go build -o /bin/obstwiese ./server.go
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o /bin/obstwiese ./server.go
 
 
 
-FROM alpine
+FROM alpine:latest
+RUN apk --no-cache add ca-certificates
 WORKDIR /root/
-COPY --from=builder /bin/obstwiese ./app
-CMD ["./app/obstwiese"]
+COPY --from=builder /bin/obstwiese .
+CMD ["./obstwiese"]

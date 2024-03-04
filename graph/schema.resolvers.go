@@ -7,6 +7,7 @@ package graph
 import (
 	"context"
 
+	"github.com/99designs/gqlgen/graphql"
 	"github.com/BurrrY/obstwiesen-server/graph/model"
 	gonanoid "github.com/matoous/go-nanoid/v2"
 	log "github.com/sirupsen/logrus"
@@ -47,17 +48,51 @@ func (r *mutationResolver) CreateTree(ctx context.Context, input model.NewTree) 
 
 // CreateEvent is the resolver for the createEvent field.
 func (r *mutationResolver) CreateEvent(ctx context.Context, input model.NewEvent) (*model.Event, error) {
-	id, _ := gonanoid.New()
+	eventID, _ := gonanoid.New()
+
+	log.Info(input.Files)
 
 	elemnt := &model.Event{
-		ID:          id,
+		ID:          eventID,
 		Title:       input.Title,
-		Description: input.Description,
+		Description: *input.Description,
 		Timestamp:   input.Timestamp,
 	}
-
 	err := storage.AddEvent(elemnt, input.ParentID)
+
+	for _, file := range input.Files {
+		fileID, _ := gonanoid.New()
+		err = filestore.StoreFile(file, eventID, fileID)
+		//	err := storage.FileToEvent(eventID, fileID)
+	}
+
 	return elemnt, err
+}
+
+// SingleUpload is the resolver for the singleUpload field.
+func (r *mutationResolver) SingleUpload(ctx context.Context, parentID string, file graphql.Upload) (*model.File, error) {
+	log.Info("SingleUpload - singleUpload")
+	log.Info(file)
+	log.Info(parentID)
+	return &model.File{
+		ParentID: "0",
+		Path:     file.Filename,
+	}, nil
+}
+
+// MultipleUpload is the resolver for the multipleUpload field.
+func (r *mutationResolver) MultipleUpload(ctx context.Context, parentID string, files []*graphql.Upload) ([]*model.File, error) {
+	log.Info("MultipleUpload - multipleUpload")
+
+	log.Info(files)
+	log.Info(parentID)
+
+	return []*model.File{
+		&model.File{
+			ParentID: "0",
+			Path:     "file.Filename",
+		},
+	}, nil
 }
 
 // Meadow is the resolver for the meadow field.
@@ -93,6 +128,12 @@ func (r *queryResolver) Tree(ctx context.Context, treeID string) (*model.Tree, e
 func (r *queryResolver) Events(ctx context.Context, treeID string) ([]*model.Event, error) {
 	var elem []*model.Event
 	elem, err := storage.GetEventsOfTree(treeID)
+
+	for _, event := range elem {
+		filesList, _ := filestore.GetFiles(event.ID)
+		event.Files = filesList
+	}
+
 	return elem, err
 }
 
@@ -100,6 +141,10 @@ func (r *queryResolver) Events(ctx context.Context, treeID string) ([]*model.Eve
 func (r *treeResolver) Events(ctx context.Context, obj *model.Tree) ([]*model.Event, error) {
 	var elem []*model.Event
 	elem, err := storage.GetEventsOfTree(obj.ID)
+	for _, event := range elem {
+		filesList, _ := filestore.GetFiles(event.ID)
+		event.Files = filesList
+	}
 	return elem, err
 }
 
@@ -119,3 +164,18 @@ type meadowResolver struct{ *Resolver }
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
 type treeResolver struct{ *Resolver }
+
+// !!! WARNING !!!
+// The code below was going to be deleted when updating resolvers. It has been copied here so you have
+// one last chance to move it out of harms way if you want. There are two reasons this happens:
+//   - When renaming or deleting a resolver the old code will be put in here. You can safely delete
+//     it when you're done.
+//   - You have helper methods in this file. Move them out to keep these resolver files clean.
+func (r *queryResolver) SingleUpload(ctx context.Context, file graphql.Upload) (bool, error) {
+	log.Info("received file ", file.File)
+	return true, nil
+}
+func (r *queryResolver) MultipleUpload(ctx context.Context, parentID string, req []*model.UploadFile) ([]*model.File, error) {
+	log.Info("received file ", req)
+	return nil, nil
+}

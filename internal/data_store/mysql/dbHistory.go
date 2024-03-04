@@ -15,6 +15,7 @@ var history = [...]string{
 	"CREATE TABLE IF NOT EXISTS `meadows` (  `id` varchar(21) NOT NULL,  `name` varchar(255) NOT NULL,  PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;",
 	"CREATE TABLE IF NOT EXISTS `trees` (  `id` varchar(21) NOT NULL,  `name` varchar(255) NOT NULL,  `meadow_id` varchar(21) NOT NULL,  `created_at` datetime DEFAULT NULL,  `lat` decimal(10,7) DEFAULT NULL,  `lang` decimal(10,7) DEFAULT NULL,  PRIMARY KEY (`id`),  KEY `FK_trees_meadows` (`meadow_id`),  CONSTRAINT `FK_trees_meadows` FOREIGN KEY (`meadow_id`) REFERENCES `meadows` (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;",
 	"CREATE TABLE IF NOT EXISTS `version` (  `version` int(11) DEFAULT 0,  `timestamp` datetime DEFAULT current_timestamp()) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;",
+	"ALTER TABLE `events` ADD COLUMN `files` TEXT NULL AFTER `timestamp`;",
 }
 
 func updateDb() {

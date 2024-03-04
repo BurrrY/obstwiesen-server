@@ -1,6 +1,8 @@
 # GraphQL schema example
 #
 # https://gqlgen.com/getting-started/
+scalar Upload
+
 
 type Meadow {
   id: ID!
@@ -23,6 +25,7 @@ type Event {
   title: String!
   description: String!
   timestamp: String!
+  files: [File!]
 }
 
 
@@ -39,15 +42,29 @@ input NewTree {
 input NewEvent {
   parentID: String!
   title: String!
-  description: String!
   timestamp: String!
+  description: String
+  files: [Upload!]
 }
 
+"The `File` type, represents the response of uploading a file."
+type File {
+  parentID: String!
+  path: String!
+}
+
+"The `UploadFile` type, represents the request for uploading a file with a certain payload."
+input UploadFile {
+  id: Int!
+  file: Upload!
+}
 
 type Mutation {
   createMeadow(input: NewMeadow!): Meadow!
   createTree(input: NewTree!): Tree!
   createEvent(input: NewEvent!): Event!
+  singleUpload(parentID: ID!, file: Upload!): File!
+  multipleUpload(parentID: ID!, files: [Upload!]!): [File!]!
 }
 
 type Query {
