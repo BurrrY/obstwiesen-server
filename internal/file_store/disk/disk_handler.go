@@ -15,6 +15,8 @@ type stor struct {
 	BasePath        string
 }
 
+var Handler stor
+
 func init() {
 
 	if os.Getenv("FILE_PROVIDER") != "disk" {
@@ -76,5 +78,3 @@ func (s stor) StoreFile(file *graphql.Upload, parentID string, fileID string) er
 
 	return nil
 }
-
-var Handler stor

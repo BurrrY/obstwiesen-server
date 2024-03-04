@@ -40,7 +40,10 @@ func main() {
 		},
 	})
 
-	router.Handle("/", playground.Handler("Starwars", "/query"))
+	fs := http.FileServer(http.Dir("files"))
+	router.Handle("/assets/*", http.StripPrefix("/assets/", fs))
+
+	router.Handle("/", playground.Handler("Obstwiese", "/query"))
 	router.Handle("/query", srv)
 
 	err := http.ListenAndServe(":8080", router)
