@@ -41,17 +41,24 @@ func (s stor) GetType() string {
 
 func (s stor) GetFiles(parentId string) ([]*model.File, error) {
 
+	base_path := os.Getenv("PUBLIC_URL")
+
 	res := []*model.File{}
 	entries, err := os.ReadDir(filepath.Join(Handler.BasePath, parentId))
 	if err != nil {
-		log.Error(err)
-		return res, nil
+		if errors.Is(err, os.ErrNotExist) {
+			//fmt.Println("The file does not exist.")
+			return res, nil
+		} else {
+			log.Error("GetFiles ", err.Error())
+			return res, nil
+		}
 	}
 
 	for _, e := range entries {
 		res = append(res, &model.File{
 			ParentID: parentId,
-			Path:     "/assets/" + parentId + "/" + e.Name(),
+			Path:     base_path + "/assets/" + parentId + "/" + e.Name(),
 		})
 	}
 

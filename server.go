@@ -23,7 +23,7 @@ func main() {
 	// Add CORS middleware around every request
 	// See https://github.com/rs/cors for full option listing
 	router.Use(cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:8080", "http://localhost:3000"},
+		AllowedOrigins:   []string{"http://localhost:8080", "http://localhost:3000", "http://192.168.178.201:3000"},
 		AllowCredentials: true,
 		Debug:            false,
 	}).Handler)
@@ -40,7 +40,7 @@ func main() {
 		},
 	})
 
-	fs := http.FileServer(http.Dir("files"))
+	fs := http.FileServer(http.Dir(os.Getenv("FILE_CONNSTR")))
 	router.Handle("/assets/*", http.StripPrefix("/assets/", fs))
 
 	router.Handle("/", playground.Handler("Obstwiese", "/query"))
