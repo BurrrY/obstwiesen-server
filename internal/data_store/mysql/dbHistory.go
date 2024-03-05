@@ -30,7 +30,7 @@ func updateDb() {
 			log.Fatalln(err.Error())
 		}
 	} else {
-		db, err = sqlx.Connect("mysql", os.Getenv("CON_STR")+"meadow")
+		db, err = sqlx.Connect("mysql", os.Getenv("DB_CONNSTR")+"meadow")
 		if err != nil {
 			log.Fatalln(err)
 		}

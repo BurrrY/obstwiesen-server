@@ -10,12 +10,12 @@
 
 ## Database-Connection
 ### SQLITE
-- PROVIDER = sqlite
-- CON_STR = path to file (data.db)
+- DB_PROVIDER = sqlite
+- DB_CONNSTR = path to file (data.db)
 
 ### MySQL
-- PROVIDER = mysql
-- CON_STR = root:my-secret-pw@tcp(127.0.0.1:3306)/meadows
+- DB_PROVIDER = mysql
+- DB_CONNSTR = root:my-secret-pw@tcp(127.0.0.1:3306)/meadows
 
 
 ## File-Storage

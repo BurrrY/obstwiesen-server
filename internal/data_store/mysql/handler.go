@@ -22,15 +22,15 @@ func (m stor) GetType() string {
 
 func init() {
 
-	if os.Getenv("PROVIDER") != "mysql" {
-		log.New().Info("Skip mysql Init by Config: " + os.Getenv("PROVIDER"))
+	if os.Getenv("DB_PROVIDER") != "mysql" {
+		log.New().Info("Skip mysql Init by Config: " + os.Getenv("DB_PROVIDER"))
 		Connection.ConnectionError = errors.New("mysql disabled")
 		return
 	}
 
 	var err error
 
-	db, err = sqlx.Connect("mysql", os.Getenv("CON_STR"))
+	db, err = sqlx.Connect("mysql", os.Getenv("DB_CONNSTR"))
 	if err != nil {
 		log.Fatalln(err)
 	}

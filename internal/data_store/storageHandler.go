@@ -10,7 +10,7 @@ import (
 func GetProvider() (*Storage, error) {
 	var result Storage
 
-	dbProvider := os.Getenv("PROVIDER")
+	dbProvider := os.Getenv("DB_PROVIDER")
 
 	if dbProvider == "sqlite" {
 		result = &sqlite.Connection

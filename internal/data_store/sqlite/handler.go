@@ -23,15 +23,15 @@ func (m stor) GetType() string {
 
 func init() {
 
-	if os.Getenv("PROVIDER") != "sqlite" {
-		log.New().Info("Skip sqlite Init by Config: " + os.Getenv("PROVIDER"))
+	if os.Getenv("DB_PROVIDER") != "sqlite" {
+		log.New().Info("Skip sqlite Init by Config: " + os.Getenv("DB_PROVIDER"))
 		Connection.ConnectionError = errors.New("sqlite disabled")
 		return
 	}
 
 	var err error
 
-	db, err = sqlx.Connect("sqlite3", os.Getenv("CON_STR"))
+	db, err = sqlx.Connect("sqlite3", os.Getenv("DB_CONNSTR"))
 	if err != nil {
 		log.Fatalln(err)
 	}
