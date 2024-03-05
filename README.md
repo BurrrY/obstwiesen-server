@@ -10,15 +10,19 @@
 
 ## Database-Connection
 ### SQLITE
-- DB_PROVIDER = sqlite
-- DB_CONNSTR = path to file (data.db)
+- OW_DB_PROVIDER = sqlite
+- OW_DB_CONNSTR = path to file (data.db)
 
 ### MySQL
-- DB_PROVIDER = mysql
-- DB_CONNSTR = root:my-secret-pw@tcp(127.0.0.1:3306)/meadows
+- OW_DB_PROVIDER = mysql
+- OW_DB_CONNSTR = root:my-secret-pw@tcp(127.0.0.1:3306)/meadows
 
 
 ## File-Storage
-- PUBLIC_URL = "http://localhost:8080"
-- FILE_PROVIDER = "disk"
-- FILE_CONNSTR = "files" 
+- OW_PUBLIC_URL = "http://localhost:8080"
+- OW_FILE_PROVIDER = "disk"
+- OW_FILE_CONNSTR = "files" 
+
+## GraphQL
+- OW_GQL_PORT = 8080 //Port for the server to listen
+- OW_GQL-PATH = /grapqh //Path where gql-server will be available

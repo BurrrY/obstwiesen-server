@@ -16,12 +16,11 @@ import (
 	"net/http"
 )
 
-const defaultPort = "8080"
-
 func setup() {
 	log.Info("Init Main")
 	viper.AutomaticEnv()
-	viper.SetDefault(config.DB_PROVIDER, "hehe")
+	viper.SetEnvPrefix("OW")
+	viper.SetDefault(config.DB_PROVIDER, "NONE")
 	viper.SetDefault(config.DB_CONNSTR, "")
 	viper.SetDefault(config.DB_NAME, "meadow")
 
