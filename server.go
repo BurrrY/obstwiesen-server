@@ -1,6 +1,8 @@
 package main
 
 import (
+	"encoding/json"
+	"fmt"
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/handler/transport"
 	"github.com/99designs/gqlgen/graphql/playground"
@@ -28,10 +30,16 @@ func setup() {
 
 	viper.SetDefault(config.PUBLIC_URL, "localhost:8080")
 
+	viper.SetDefault(config.GQL_PORT, "8080")
+	viper.SetDefault(config.GQL_PATH, "/graphql")
+
 }
 
 func main() {
 	setup()
+
+	b, _ := json.MarshalIndent(viper.AllSettings(), "", "  ")
+	fmt.Print(string(b), "\n")
 
 	r := graph.Resolver{}
 	r.Setup()
@@ -61,10 +69,10 @@ func main() {
 	fs := http.FileServer(http.Dir(viper.GetString(config.FILE_CONNSTR)))
 	router.Handle("/assets/*", http.StripPrefix("/assets/", fs))
 
-	router.Handle("/", playground.Handler("Obstwiese", "/query"))
-	router.Handle("/query", srv)
+	router.Handle("/", playground.Handler("Obstwiese", viper.GetString(config.GQL_PATH)))
+	router.Handle(viper.GetString(config.GQL_PATH), srv)
 
-	err := http.ListenAndServe(":8080", router)
+	err := http.ListenAndServe(":"+viper.GetString(config.GQL_PORT), router)
 	if err != nil {
 		panic(err)
 	}
