@@ -2,16 +2,40 @@ package sqlite
 
 import (
 	"errors"
-	_ "github.com/mattn/go-sqlite3"
-
+	"github.com/BurrrY/obstwiesen-server/internal/config"
 	"github.com/jmoiron/sqlx"
+	_ "github.com/mattn/go-sqlite3"
 	log "github.com/sirupsen/logrus"
-	"os"
+	"github.com/spf13/viper"
 )
 
 type stor struct {
 	ConnectionString string
 	ConnectionError  error
+	SetupDone        bool
+}
+
+func (m stor) Setup() {
+
+	if m.SetupDone == true {
+		return
+	}
+
+	if viper.GetString(config.DB_PROVIDER) != "sqlite" {
+		log.New().Info("Skip sqlite Init by Config: " + viper.GetString(config.DB_PROVIDER))
+		Connection.ConnectionError = errors.New("sqlite disabled")
+		return
+	}
+
+	var err error
+
+	db, err = sqlx.Connect("sqlite3", viper.GetString(config.DB_CONNSTR))
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	updateDb()
+	m.SetupDone = true
 }
 
 var db *sqlx.DB
@@ -22,20 +46,5 @@ func (m stor) GetType() string {
 }
 
 func init() {
-
-	if os.Getenv("DB_PROVIDER") != "sqlite" {
-		log.New().Info("Skip sqlite Init by Config: " + os.Getenv("DB_PROVIDER"))
-		Connection.ConnectionError = errors.New("sqlite disabled")
-		return
-	}
-
-	var err error
-
-	db, err = sqlx.Connect("sqlite3", os.Getenv("DB_CONNSTR"))
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	updateDb()
 
 }

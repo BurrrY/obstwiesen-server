@@ -46,9 +46,6 @@ alter table events
     add timestamp TEXT;
 
 `,
-	`alter table events
-    add files TEXT;
-`,
 }
 
 func updateDb() {

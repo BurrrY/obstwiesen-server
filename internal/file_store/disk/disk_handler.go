@@ -4,7 +4,9 @@ import (
 	"errors"
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/BurrrY/obstwiesen-server/graph/model"
+	"github.com/BurrrY/obstwiesen-server/internal/config"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 	"io"
 	"os"
 	"path/filepath"
@@ -13,27 +15,33 @@ import (
 type stor struct {
 	ConnectionError error
 	BasePath        string
+	SetupDone       bool
 }
 
-var Handler stor
+func (s stor) Setup() {
 
-func init() {
-
-	if os.Getenv("FILE_PROVIDER") != "disk" {
-		log.New().Info("Skip disk Init by Config: " + os.Getenv("FILE_PROVIDER"))
-		Handler.ConnectionError = errors.New("disk disabled")
+	if s.SetupDone == true {
 		return
 	}
 
-	path := os.Getenv("FILE_CONNSTR")
-	Handler.BasePath = path
+	if viper.GetString(config.FILE_PROVIDER) != "disk" {
+		log.New().Info("Skip disk Init by Config: " + viper.GetString(config.FILE_PROVIDER))
+		Thing.ConnectionError = errors.New("disk disabled")
+		return
+	}
+
+	path := viper.GetString(config.FILE_CONNSTR)
+	Thing.BasePath = path
 
 	err := os.MkdirAll(path, os.ModePerm)
 	if err != nil {
 		log.Panic(err)
 	}
 
+	s.SetupDone = true
 }
+
+var Thing stor
 
 func (s stor) GetType() string {
 	return "disk"
@@ -41,10 +49,10 @@ func (s stor) GetType() string {
 
 func (s stor) GetFiles(parentId string) ([]*model.File, error) {
 
-	base_path := os.Getenv("PUBLIC_URL")
+	base_path := viper.GetString(config.PUBLIC_URL)
 
 	res := []*model.File{}
-	entries, err := os.ReadDir(filepath.Join(Handler.BasePath, parentId))
+	entries, err := os.ReadDir(filepath.Join(Thing.BasePath, parentId))
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			//fmt.Println("The file does not exist.")
@@ -68,15 +76,15 @@ func (s stor) GetFiles(parentId string) ([]*model.File, error) {
 func (s stor) StoreFile(file *graphql.Upload, parentID string, fileID string) error {
 
 	log.Info("Store File:", file.Filename)
-	log.Info("Target:", filepath.Join(Handler.BasePath, parentID, fileID))
+	log.Info("Target:", filepath.Join(Thing.BasePath, parentID, fileID))
 
-	err := os.MkdirAll(filepath.Join(Handler.BasePath, parentID), os.ModePerm)
+	err := os.MkdirAll(filepath.Join(Thing.BasePath, parentID), os.ModePerm)
 	if err != nil {
 		log.Error(err)
 		return err
 	}
 
-	f2, err := os.Create(filepath.Join(Handler.BasePath, parentID, fileID))
+	f2, err := os.Create(filepath.Join(Thing.BasePath, parentID, fileID))
 	if err != nil {
 		log.Error(err)
 	}

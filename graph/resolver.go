@@ -17,10 +17,14 @@ type Resolver struct {
 	meadows []*model.Meadow
 }
 
-func init() {
+func (r *Resolver) Setup() {
 	tmp, _ := str.GetProvider()
 	storage = *tmp
 
 	tmp2, _ := fstr.GetProvider()
 	filestore = *tmp2
+}
+
+func init() {
+
 }

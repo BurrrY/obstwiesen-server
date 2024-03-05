@@ -1,16 +1,17 @@
 package storage
 
 import (
+	"github.com/BurrrY/obstwiesen-server/internal/config"
 	"github.com/BurrrY/obstwiesen-server/internal/data_store/mysql"
 	"github.com/BurrrY/obstwiesen-server/internal/data_store/sqlite"
 	log "github.com/sirupsen/logrus"
-	"os"
+	"github.com/spf13/viper"
 )
 
 func GetProvider() (*Storage, error) {
 	var result Storage
 
-	dbProvider := os.Getenv("DB_PROVIDER")
+	dbProvider := viper.GetString(config.DB_PROVIDER)
 
 	if dbProvider == "sqlite" {
 		result = &sqlite.Connection
@@ -19,8 +20,8 @@ func GetProvider() (*Storage, error) {
 	} else {
 		log.WithFields(log.Fields{
 			"connectionData": dbProvider,
-		}).Fatal("Cannot Connect to DB, No 'dbProvider' configured!")
+		}).Fatal("Cannot Connect to any DB, No 'dbProvider' configured!")
 	}
-
+	result.Setup()
 	return &result, nil
 }

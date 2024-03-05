@@ -1,0 +1,8 @@
+package config
+
+const DB_NAME = "DB_NAME"
+const DB_CONNSTR = "DB_CONNSTR"
+const DB_PROVIDER = "DB_PROVIDER"
+const FILE_CONNSTR = "FILE_CONNSTR"
+const FILE_PROVIDER = "FILE_PROVIDER"
+const PUBLIC_URL = "PUBLIC_URL"
