@@ -1,0 +1,35 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="go build server.go" type="GoApplicationRunConfiguration" factoryName="Go Application" nameIsGenerated="true">
+    <module name="obstwiesen-server" />
+    <working_directory value="$PROJECT_DIR$" />
+    <envs>
+      <env name="OW_CON_STR_sqlite" value="obst.db" />
+      <env name="OW_DB_CONNSTR" value="root:my-secret-pw@tcp(127.0.0.1:3306)/" />
+      <env name="OW_DB_NAME" value="meadow" />
+      <env name="OW_DB_PROVIDER" value="mysql" />
+      <env name="OW_FILE_CONNSTR" value="files" />
+      <env name="OW_FILE_PROVIDER" value="disk" />
+      <env name="OW_PUBLIC_URL" value="http://localhost:8080" />
+    </envs>
+    <EXTENSION ID="net.ashald.envfile">
+      <option name="IS_ENABLED" value="false" />
+      <option name="IS_SUBST" value="false" />
+      <option name="IS_PATH_MACRO_SUPPORTED" value="false" />
+      <option name="IS_IGNORE_MISSING_FILES" value="false" />
+      <option name="IS_ENABLE_EXPERIMENTAL_INTEGRATIONS" value="false" />
+      <ENTRIES>
+        <ENTRY IS_ENABLED="true" PARSER="runconfig" IS_EXECUTABLE="false" />
+      </ENTRIES>
+    </EXTENSION>
+    <EXTENSION ID="software.aws.toolkits.jetbrains.core.execution.GoAwsConnectionRunConfigurationExtension">
+      <option name="credential" />
+      <option name="region" />
+      <option name="useCurrentConnection" value="false" />
+    </EXTENSION>
+    <kind value="FILE" />
+    <package value="obstwiesen-server" />
+    <directory value="$PROJECT_DIR$" />
+    <filePath value="$PROJECT_DIR$/server.go" />
+    <method v="2" />
+  </configuration>
+</component>

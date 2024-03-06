@@ -1,0 +1,68 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Dockerfile" type="docker-deploy" factoryName="dockerfile" server-name="Docker">
+    <deployment type="dockerfile">
+      <settings>
+        <option name="imageTag" value="ow-server-dev" />
+        <option name="containerName" value="ow-server" />
+        <option name="envVars">
+          <list>
+            <DockerEnvVarImpl>
+              <option name="name" value="OW_CON_STR_sqlite" />
+              <option name="value" value="obst.db" />
+            </DockerEnvVarImpl>
+            <DockerEnvVarImpl>
+              <option name="name" value="OW_DB_CONNSTR" />
+              <option name="value" value="root:my-secret-pw@tcp(host.docker.internal:3306)/" />
+            </DockerEnvVarImpl>
+            <DockerEnvVarImpl>
+              <option name="name" value="OW_DB_NAME" />
+              <option name="value" value="meadow" />
+            </DockerEnvVarImpl>
+            <DockerEnvVarImpl>
+              <option name="name" value="OW_DB_PROVIDER" />
+              <option name="value" value="mysql" />
+            </DockerEnvVarImpl>
+            <DockerEnvVarImpl>
+              <option name="name" value="OW_FILE_CONNSTR" />
+              <option name="value" value="/files" />
+            </DockerEnvVarImpl>
+            <DockerEnvVarImpl>
+              <option name="name" value="OW_FILE_PROVIDER" />
+              <option name="value" value="disk" />
+            </DockerEnvVarImpl>
+            <DockerEnvVarImpl>
+              <option name="name" value="OW_PUBLIC_URL" />
+              <option name="value" value="http://localhost:8080" />
+            </DockerEnvVarImpl>
+            <DockerEnvVarImpl>
+              <option name="name" value="OW_XORIG_DBG" />
+              <option name="value" value="true" />
+            </DockerEnvVarImpl>
+            <DockerEnvVarImpl>
+              <option name="name" value="OW_XORIG" />
+              <option name="value" value="http://localhost:13000" />
+            </DockerEnvVarImpl>
+          </list>
+        </option>
+        <option name="portBindings">
+          <list>
+            <DockerPortBindingImpl>
+              <option name="containerPort" value="8080" />
+              <option name="hostPort" value="18080" />
+            </DockerPortBindingImpl>
+          </list>
+        </option>
+        <option name="sourceFilePath" value="Dockerfile" />
+        <option name="volumeBindings">
+          <list>
+            <DockerVolumeBindingImpl>
+              <option name="containerPath" value="/files" />
+              <option name="hostPath" value="D:\Development\priv\ow\runner\files" />
+            </DockerVolumeBindingImpl>
+          </list>
+        </option>
+      </settings>
+    </deployment>
+    <method v="2" />
+  </configuration>
+</component>
