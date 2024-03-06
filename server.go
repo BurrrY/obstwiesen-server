@@ -31,6 +31,8 @@ func setup() {
 
 	viper.SetDefault(config.GQL_PORT, "8080")
 	viper.SetDefault(config.GQL_PATH, "/graphql")
+	viper.SetDefault(config.XORIG, "http://localhost:3000")
+	viper.SetDefault(config.XORIG_DBG, false)
 
 }
 
@@ -48,9 +50,9 @@ func main() {
 	// Add CORS middleware around every request
 	// See https://github.com/rs/cors for full option listing
 	router.Use(cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:8080", "http://localhost:3000", "http://192.168.178.201:3000"},
+		AllowedOrigins:   []string{"http://localhost:8080", viper.GetString(config.XORIG), "http://192.168.178.201:3000"},
 		AllowCredentials: true,
-		Debug:            false,
+		Debug:            viper.GetBool(config.XORIG_DBG),
 	}).Handler)
 
 	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{}}))
