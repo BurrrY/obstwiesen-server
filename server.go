@@ -69,6 +69,13 @@ func main() {
 
 	fs := http.FileServer(http.Dir(viper.GetString(config.FILE_CONNSTR)))
 	router.Handle("/assets/*", http.StripPrefix("/assets/", fs))
+	/*
+		router.Get("/assets/{dir}/{file}", func(writer http.ResponseWriter, request *http.Request) {
+
+			log.Info("Got Request", request.URL)
+			log.Info("Got file", chi.URLParam(request, "file"))
+			log.Info("Got dir", chi.URLParam(request, "dir"))
+		})*/
 
 	router.Handle("/", playground.Handler("Obstwiese", viper.GetString(config.GQL_PATH)))
 	router.Handle(viper.GetString(config.GQL_PATH), srv)

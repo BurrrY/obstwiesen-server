@@ -6,6 +6,7 @@ package graph
 
 import (
 	"context"
+	"strings"
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/BurrrY/obstwiesen-server/graph/model"
@@ -62,7 +63,12 @@ func (r *mutationResolver) CreateEvent(ctx context.Context, input model.NewEvent
 
 	for _, file := range input.Files {
 		fileID, _ := gonanoid.New()
-		err = filestore.StoreFile(file, eventID, fileID)
+
+		idx := strings.LastIndex(file.Filename, ".")
+		ending := file.Filename[idx:]
+		log.Debug("Filename: " + file.Filename)
+		log.Debug("End: ", ending)
+		err = filestore.StoreFile(file, eventID, fileID+ending)
 		//	err := storage.FileToEvent(eventID, fileID)
 	}
 
