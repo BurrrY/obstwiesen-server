@@ -10,5 +10,5 @@ type FileStorage interface {
 	Setup()
 	StoreFile(file *graphql.Upload, parentID string, fileID string) error
 	GetFiles(parentId string) ([]*model.File, error)
-	//AssetHandler(http.ResponseWriter, *http.Request)
+	GetImage(file string, dir string, width int) string
 }

@@ -8,12 +8,14 @@ import (
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/BurrrY/obstwiesen-server/graph"
 	"github.com/BurrrY/obstwiesen-server/internal/config"
+	fstr "github.com/BurrrY/obstwiesen-server/internal/file_store"
 	"github.com/go-chi/chi/v5"
 	"github.com/gorilla/websocket"
 	"github.com/rs/cors"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"net/http"
+	"strconv"
 )
 
 func setup() {
@@ -67,15 +69,29 @@ func main() {
 		},
 	})
 
-	fs := http.FileServer(http.Dir(viper.GetString(config.FILE_CONNSTR)))
-	router.Handle("/assets/*", http.StripPrefix("/assets/", fs))
-	/*
-		router.Get("/assets/{dir}/{file}", func(writer http.ResponseWriter, request *http.Request) {
+	//fs := http.FileServer(http.Dir(viper.GetString(config.FILE_CONNSTR)))
+	//router.Handle("/assets/*", http.StripPrefix("/assets/", fs))
 
-			log.Info("Got Request", request.URL)
-			log.Info("Got file", chi.URLParam(request, "file"))
-			log.Info("Got dir", chi.URLParam(request, "dir"))
-		})*/
+	var filestore fstr.FileStorage
+	tmp2, _ := fstr.GetProvider()
+	filestore = *tmp2
+	router.Get("/assets/{dir}/{file}", func(w http.ResponseWriter, r *http.Request) {
+
+		file := chi.URLParam(r, "file")
+		dir := chi.URLParam(r, "dir")
+		if file == "optimized" {
+			log.Error("Requested 'optimized' from dir ", dir)
+			return
+		}
+		log.Info("File requested: ", file)
+
+		width_str := r.URL.Query().Get("w")
+		width, _ := strconv.Atoi(width_str)
+
+		filepath := filestore.GetImage(file, dir, width)
+
+		http.ServeFile(w, r, filepath)
+	})
 
 	router.Handle("/", playground.Handler("Obstwiese", viper.GetString(config.GQL_PATH)))
 	router.Handle(viper.GetString(config.GQL_PATH), srv)
