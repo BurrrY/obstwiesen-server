@@ -10,7 +10,7 @@ import (
 func ResizeImage(src_path string, dst_path string, width int) (string, error) {
 
 	srcImage, err := imaging.Open(src_path, imaging.AutoOrientation(true))
-	dstImage800 := imaging.Resize(srcImage, width, 0, imaging.Lanczos)
+	dstImage800 := imaging.Resize(srcImage, width, 0, imaging.Linear)
 
 	// Create the file to which the resized image will be written.
 	out, err := os.Create(dst_path)
@@ -21,7 +21,7 @@ func ResizeImage(src_path string, dst_path string, width int) (string, error) {
 	defer out.Close()
 
 	// Encode and write the resized image to the new file.
-	err = jpeg.Encode(out, dstImage800, nil)
+	err = jpeg.Encode(out, dstImage800, &jpeg.Options{Quality: 55})
 	if err != nil {
 		log.Error(err)
 		return "", err
