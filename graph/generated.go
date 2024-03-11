@@ -88,6 +88,7 @@ type ComplexityRoot struct {
 	}
 
 	Tree struct {
+		Banner func(childComplexity int) int
 		Events func(childComplexity int) int
 		ID     func(childComplexity int) int
 		Lang   func(childComplexity int) int
@@ -117,6 +118,7 @@ type QueryResolver interface {
 }
 type TreeResolver interface {
 	Events(ctx context.Context, obj *model.Tree) ([]*model.Event, error)
+	Banner(ctx context.Context, obj *model.Tree) (*model.File, error)
 }
 
 type executableSchema struct {
@@ -343,6 +345,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.Trees(childComplexity, args["meadow_id"].(string)), true
+
+	case "Tree.banner":
+		if e.complexity.Tree.Banner == nil {
+			break
+		}
+
+		return e.complexity.Tree.Banner(childComplexity), true
 
 	case "Tree.events":
 		if e.complexity.Tree.Events == nil {
@@ -1205,6 +1214,8 @@ func (ec *executionContext) fieldContext_Meadow_trees(ctx context.Context, field
 				return ec.fieldContext_Tree_lang(ctx, field)
 			case "events":
 				return ec.fieldContext_Tree_events(ctx, field)
+			case "banner":
+				return ec.fieldContext_Tree_banner(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Tree", field.Name)
 		},
@@ -1430,6 +1441,8 @@ func (ec *executionContext) fieldContext_Mutation_createTree(ctx context.Context
 				return ec.fieldContext_Tree_lang(ctx, field)
 			case "events":
 				return ec.fieldContext_Tree_events(ctx, field)
+			case "banner":
+				return ec.fieldContext_Tree_banner(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Tree", field.Name)
 		},
@@ -1808,6 +1821,8 @@ func (ec *executionContext) fieldContext_Query_trees(ctx context.Context, field 
 				return ec.fieldContext_Tree_lang(ctx, field)
 			case "events":
 				return ec.fieldContext_Tree_events(ctx, field)
+			case "banner":
+				return ec.fieldContext_Tree_banner(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Tree", field.Name)
 		},
@@ -1872,6 +1887,8 @@ func (ec *executionContext) fieldContext_Query_tree(ctx context.Context, field g
 				return ec.fieldContext_Tree_lang(ctx, field)
 			case "events":
 				return ec.fieldContext_Tree_events(ctx, field)
+			case "banner":
+				return ec.fieldContext_Tree_banner(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Tree", field.Name)
 		},
@@ -2308,6 +2325,53 @@ func (ec *executionContext) fieldContext_Tree_events(ctx context.Context, field 
 				return ec.fieldContext_Event_files(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Event", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Tree_banner(ctx context.Context, field graphql.CollectedField, obj *model.Tree) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Tree_banner(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Tree().Banner(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.File)
+	fc.Result = res
+	return ec.marshalOFile2ᚖgithubᚗcomᚋBurrrYᚋobstwiesenᚑserverᚋgraphᚋmodelᚐFile(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Tree_banner(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Tree",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "parentID":
+				return ec.fieldContext_File_parentID(ctx, field)
+			case "path":
+				return ec.fieldContext_File_path(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type File", field.Name)
 		},
 	}
 	return fc, nil
@@ -4730,6 +4794,39 @@ func (ec *executionContext) _Tree(ctx context.Context, sel ast.SelectionSet, obj
 					}
 				}()
 				res = ec._Tree_events(ctx, field, obj)
+				return res
+			}
+
+			if field.Deferrable != nil {
+				dfs, ok := deferred[field.Deferrable.Label]
+				di := 0
+				if ok {
+					dfs.AddField(field)
+					di = len(dfs.Values) - 1
+				} else {
+					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
+					deferred[field.Deferrable.Label] = dfs
+				}
+				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
+					return innerFunc(ctx, dfs)
+				})
+
+				// don't run the out.Concurrently() call below
+				out.Values[i] = graphql.Null
+				continue
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "banner":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Tree_banner(ctx, field, obj)
 				return res
 			}
 

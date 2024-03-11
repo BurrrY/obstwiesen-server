@@ -95,3 +95,5 @@ models:
     fields:
       events:
         resolver: true
+      banner:
+        resolver: true

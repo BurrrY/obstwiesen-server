@@ -6,14 +6,14 @@ package graph
 
 import (
 	"context"
-	"github.com/BurrrY/obstwiesen-server/internal/config"
-	"github.com/spf13/viper"
 	"strings"
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/BurrrY/obstwiesen-server/graph/model"
+	"github.com/BurrrY/obstwiesen-server/internal/config"
 	gonanoid "github.com/matoous/go-nanoid/v2"
 	log "github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
 
 // Trees is the resolver for the trees field.
@@ -28,10 +28,10 @@ func (r *meadowResolver) Banner(ctx context.Context, obj *model.Meadow) (*model.
 	file, err := filestore.GetFile(obj.ID)
 
 	if file == nil {
-		base_path := viper.GetString(config.PUBLIC_URL)
+		basePath := viper.GetString(config.PUBLIC_URL)
 		file = &model.File{
 			ParentID: obj.ID,
-			Path:     base_path + "/static/default/meadow.jpg",
+			Path:     basePath + "/static/default/meadow.jpg",
 		}
 		err = nil
 	}
@@ -163,6 +163,22 @@ func (r *treeResolver) Events(ctx context.Context, obj *model.Tree) ([]*model.Ev
 		event.Files = filesList
 	}
 	return elem, err
+}
+
+// Banner is the resolver for the banner field.
+func (r *treeResolver) Banner(ctx context.Context, obj *model.Tree) (*model.File, error) {
+	file, err := filestore.GetFile(obj.ID)
+
+	if file == nil {
+		basePath := viper.GetString(config.PUBLIC_URL)
+		file = &model.File{
+			ParentID: obj.ID,
+			Path:     basePath + "/static/default/tree.jpg",
+		}
+		err = nil
+	}
+
+	return file, err
 }
 
 // Meadow returns MeadowResolver implementation.

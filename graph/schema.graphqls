@@ -18,6 +18,7 @@ type Tree {
   lat: Float
   lang: Float
   events: [Event!]
+  banner: File
 }
 
 type Event {

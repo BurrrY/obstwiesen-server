@@ -58,6 +58,7 @@ type Tree struct {
 	Lat    *float64 `json:"lat,omitempty"`
 	Lang   *float64 `json:"lang,omitempty"`
 	Events []*Event `json:"events,omitempty"`
+	Banner *File    `json:"banner,omitempty"`
 }
 
 // The `UploadFile` type, represents the request for uploading a file with a certain payload.
