@@ -14,9 +14,9 @@ func ResizeImage(src_path string, dst_path string, width int) (string, error) {
 
 	bnds := srcImage.Bounds()
 
-	width_o := bnds.Size().X
-	if width_o >= width_o {
-		log.Info("Requested image bigger than original. nor rescaling. oWidth: ", width_o, " new width ", width)
+	widthOrig := bnds.Size().X
+	if width >= widthOrig {
+		log.Info("Requested image bigger than original. nor rescaling. oWidth:", widthOrig, " requested width:", width)
 		return src_path, nil
 	}
 
