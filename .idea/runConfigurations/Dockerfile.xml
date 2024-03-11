@@ -24,7 +24,7 @@
             </DockerEnvVarImpl>
             <DockerEnvVarImpl>
               <option name="name" value="OW_FILE_CONNSTR" />
-              <option name="value" value="/files" />
+              <option name="value" value="/files_somewhere" />
             </DockerEnvVarImpl>
             <DockerEnvVarImpl>
               <option name="name" value="OW_FILE_PROVIDER" />
@@ -32,15 +32,15 @@
             </DockerEnvVarImpl>
             <DockerEnvVarImpl>
               <option name="name" value="OW_PUBLIC_URL" />
-              <option name="value" value="http://localhost:8080" />
+              <option name="value" value="http://localhost:18080" />
+            </DockerEnvVarImpl>
+            <DockerEnvVarImpl>
+              <option name="name" value="OW_XORIG" />
+              <option name="value" value="http://localhost:3000" />
             </DockerEnvVarImpl>
             <DockerEnvVarImpl>
               <option name="name" value="OW_XORIG_DBG" />
               <option name="value" value="true" />
-            </DockerEnvVarImpl>
-            <DockerEnvVarImpl>
-              <option name="name" value="OW_XORIG" />
-              <option name="value" value="http://localhost:13000" />
             </DockerEnvVarImpl>
           </list>
         </option>

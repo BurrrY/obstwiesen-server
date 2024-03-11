@@ -9,6 +9,7 @@ type Meadow {
   name: String!
   trees: [Tree!]!
   events: [Event!]
+  banner: File
 }
 
 type Tree {

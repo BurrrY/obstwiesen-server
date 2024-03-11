@@ -21,6 +21,12 @@ func (r *meadowResolver) Trees(ctx context.Context, obj *model.Meadow) ([]*model
 	return meadows, err
 }
 
+// Banner is the resolver for the banner field.
+func (r *meadowResolver) Banner(ctx context.Context, obj *model.Meadow) (*model.File, error) {
+	file, err := filestore.GetFile(obj.ID)
+	return file, err
+}
+
 // CreateMeadow is the resolver for the createMeadow field.
 func (r *mutationResolver) CreateMeadow(ctx context.Context, input model.NewMeadow) (*model.Meadow, error) {
 	id, _ := gonanoid.New()
@@ -62,13 +68,7 @@ func (r *mutationResolver) CreateEvent(ctx context.Context, input model.NewEvent
 	err := storage.AddEvent(elemnt, input.ParentID)
 
 	for _, file := range input.Files {
-		fileID, _ := gonanoid.New()
-
-		idx := strings.LastIndex(file.Filename, ".")
-		ending := file.Filename[idx:]
-		log.Debug("Filename: " + file.Filename)
-		log.Debug("End: ", ending)
-		err = filestore.StoreFile(file, eventID, fileID+ending)
+		err, _ = storeFile(file, eventID)
 		//	err := storage.FileToEvent(eventID, fileID)
 	}
 
@@ -77,13 +77,11 @@ func (r *mutationResolver) CreateEvent(ctx context.Context, input model.NewEvent
 
 // SingleUpload is the resolver for the singleUpload field.
 func (r *mutationResolver) SingleUpload(ctx context.Context, parentID string, file graphql.Upload) (*model.File, error) {
-	log.Info("SingleUpload - singleUpload")
-	log.Info(file)
-	log.Info(parentID)
+	err, newPath := storeFile(&file, parentID)
 	return &model.File{
-		ParentID: "0",
-		Path:     file.Filename,
-	}, nil
+		ParentID: parentID,
+		Path:     newPath,
+	}, err
 }
 
 // MultipleUpload is the resolver for the multipleUpload field.
@@ -105,6 +103,7 @@ func (r *mutationResolver) MultipleUpload(ctx context.Context, parentID string, 
 func (r *queryResolver) Meadow(ctx context.Context, meadowID string) (*model.Meadow, error) {
 	var meadow *model.Meadow
 	meadow, err := storage.GetMeadowByID(meadowID)
+
 	return meadow, err
 }
 
@@ -177,6 +176,16 @@ type treeResolver struct{ *Resolver }
 //   - When renaming or deleting a resolver the old code will be put in here. You can safely delete
 //     it when you're done.
 //   - You have helper methods in this file. Move them out to keep these resolver files clean.
+func storeFile(file *graphql.Upload, eventID string) (error, string) {
+	fileID, _ := gonanoid.New()
+
+	idx := strings.LastIndex(file.Filename, ".")
+	ending := file.Filename[idx:]
+	log.Debug("Filename: " + file.Filename)
+	log.Debug("End: ", ending)
+	err, newPath := filestore.StoreFile(file, eventID, fileID+ending)
+	return err, newPath
+}
 func (r *queryResolver) SingleUpload(ctx context.Context, file graphql.Upload) (bool, error) {
 	log.Info("received file ", file.File)
 	return true, nil

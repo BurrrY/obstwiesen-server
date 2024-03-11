@@ -20,6 +20,38 @@ type stor struct {
 	SetupDone       bool
 }
 
+func (s stor) GetFile(parentId string) (*model.File, error) {
+
+	base_path := viper.GetString(config.PUBLIC_URL)
+
+	res := &model.File{}
+	entries, err := os.ReadDir(filepath.Join(Thing.BasePath, parentId))
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			//fmt.Println("The file does not exist.")
+			return res, nil
+		} else {
+			log.Error("GetFiles ", err.Error())
+			return res, nil
+		}
+	}
+
+	for _, e := range entries {
+		if e.IsDir() {
+			continue
+		}
+
+		res = &model.File{
+			ParentID: parentId,
+			Path:     base_path + "/assets/" + parentId + "/" + e.Name(),
+		}
+
+		break
+	}
+
+	return res, nil
+}
+
 func (s stor) GetImage(file string, dir string, width int) string {
 	err := os.MkdirAll(filepath.Join(Thing.BasePath, dir, "optimized"), os.ModePerm)
 	if err != nil {
@@ -38,11 +70,16 @@ func (s stor) GetImage(file string, dir string, width int) string {
 	size_str := strconv.Itoa(width)
 	dst_path := filepath.Join(Thing.BasePath, dir, "optimized", size_str+"px_"+file)
 
+	respPath := src_path
+
 	if _, err := os.Stat(dst_path); os.IsNotExist(err) {
-		imgHandler.ResizeImage(src_path, dst_path, width)
+		resRespPath, err := imgHandler.ResizeImage(src_path, dst_path, width)
+		if err == nil {
+			respPath = resRespPath
+		}
 	}
 
-	return dst_path
+	return respPath
 }
 
 func width_checker(size int) int {
@@ -121,7 +158,7 @@ func (s stor) GetFiles(parentId string) ([]*model.File, error) {
 	return res, nil
 }
 
-func (s stor) StoreFile(file *graphql.Upload, parentID string, fileID string) error {
+func (s stor) StoreFile(file *graphql.Upload, parentID string, fileID string) (error, string) {
 
 	log.Info("Store File:", file.Filename)
 	log.Info("Target:", filepath.Join(Thing.BasePath, parentID, fileID))
@@ -129,7 +166,7 @@ func (s stor) StoreFile(file *graphql.Upload, parentID string, fileID string) er
 	err := os.MkdirAll(filepath.Join(Thing.BasePath, parentID), os.ModePerm)
 	if err != nil {
 		log.Error(err)
-		return err
+		return err, ""
 	}
 
 	f2, err := os.Create(filepath.Join(Thing.BasePath, parentID, fileID))
@@ -139,5 +176,6 @@ func (s stor) StoreFile(file *graphql.Upload, parentID string, fileID string) er
 	defer f2.Close()
 	io.Copy(f2, file.File)
 
-	return nil
+	base_path := viper.GetString(config.PUBLIC_URL)
+	return nil, base_path + "/assets/" + parentID + "/" + fileID
 }

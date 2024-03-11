@@ -89,6 +89,8 @@ models:
     fields:
       trees:
         resolver: true
+      banner:
+        resolver: true
   Tree:
     fields:
       events:

@@ -26,6 +26,7 @@ type Meadow struct {
 	Name   string   `json:"name"`
 	Trees  []*Tree  `json:"trees"`
 	Events []*Event `json:"events,omitempty"`
+	Banner *File    `json:"banner,omitempty"`
 }
 
 type Mutation struct {

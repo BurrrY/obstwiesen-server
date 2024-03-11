@@ -19,10 +19,16 @@
 
 
 ## File-Storage
-- OW_PUBLIC_URL = "http://localhost:8080"
 - OW_FILE_PROVIDER = "disk"
 - OW_FILE_CONNSTR = "files" 
 
 ## GraphQL
 - OW_GQL_PORT = 8080 //Port for the server to listen
 - OW_GQL-PATH = /grapqh //Path where gql-server will be available
+
+## Cross-Origin
+- OW_XORIG = "http://localhost:13000"
+- OW_XORIG_DBG = "true"
+
+## Others
+- OW_PUBLIC_URL = "http://localhost:8080"
