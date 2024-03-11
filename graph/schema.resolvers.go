@@ -6,6 +6,8 @@ package graph
 
 import (
 	"context"
+	"github.com/BurrrY/obstwiesen-server/internal/config"
+	"github.com/spf13/viper"
 	"strings"
 
 	"github.com/99designs/gqlgen/graphql"
@@ -24,6 +26,16 @@ func (r *meadowResolver) Trees(ctx context.Context, obj *model.Meadow) ([]*model
 // Banner is the resolver for the banner field.
 func (r *meadowResolver) Banner(ctx context.Context, obj *model.Meadow) (*model.File, error) {
 	file, err := filestore.GetFile(obj.ID)
+
+	if file == nil {
+		base_path := viper.GetString(config.PUBLIC_URL)
+		file = &model.File{
+			ParentID: obj.ID,
+			Path:     base_path + "/static/default/meadow.jpg",
+		}
+		err = nil
+	}
+
 	return file, err
 }
 

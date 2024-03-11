@@ -69,8 +69,8 @@ func main() {
 		},
 	})
 
-	//fs := http.FileServer(http.Dir(viper.GetString(config.FILE_CONNSTR)))
-	//router.Handle("/assets/*", http.StripPrefix("/assets/", fs))
+	fs := http.FileServer(http.Dir("assets"))
+	router.Handle("/static/*", http.StripPrefix("/static/", fs))
 
 	var filestore fstr.FileStorage
 	tmp2, _ := fstr.GetProvider()

@@ -24,15 +24,14 @@ func (s stor) GetFile(parentId string) (*model.File, error) {
 
 	base_path := viper.GetString(config.PUBLIC_URL)
 
-	res := &model.File{}
 	entries, err := os.ReadDir(filepath.Join(Thing.BasePath, parentId))
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			//fmt.Println("The file does not exist.")
-			return res, nil
+			return nil, err
 		} else {
 			log.Error("GetFiles ", err.Error())
-			return res, nil
+			return nil, err
 		}
 	}
 
@@ -41,15 +40,16 @@ func (s stor) GetFile(parentId string) (*model.File, error) {
 			continue
 		}
 
-		res = &model.File{
+		res := &model.File{
 			ParentID: parentId,
 			Path:     base_path + "/assets/" + parentId + "/" + e.Name(),
 		}
+		return res, nil
 
 		break
 	}
 
-	return res, nil
+	return nil, errors.New("no image found")
 }
 
 func (s stor) GetImage(file string, dir string, width int) string {
