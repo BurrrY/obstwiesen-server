@@ -1,6 +1,7 @@
 package sqlite
 
 import (
+	"context"
 	"errors"
 	"github.com/BurrrY/obstwiesen-server/graph/model"
 	"github.com/BurrrY/obstwiesen-server/internal/config"
@@ -14,6 +15,11 @@ type stor struct {
 	ConnectionString string
 	ConnectionError  error
 	SetupDone        bool
+}
+
+func (m stor) UpdateMeadow(ctx context.Context, id string, input model.MeadowInput) (*model.Meadow, error) {
+	//TODO implement me
+	panic("implement me")
 }
 
 func (m stor) UpdateTree(id string, input model.TreeInput) (*model.Tree, error) {

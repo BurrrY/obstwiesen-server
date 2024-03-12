@@ -49,6 +49,11 @@ type DirectiveRoot struct {
 }
 
 type ComplexityRoot struct {
+	Coords struct {
+		Lang func(childComplexity int) int
+		Lat  func(childComplexity int) int
+	}
+
 	Event struct {
 		Description func(childComplexity int) int
 		Files       func(childComplexity int) int
@@ -64,6 +69,7 @@ type ComplexityRoot struct {
 	}
 
 	Meadow struct {
+		Area   func(childComplexity int) int
 		Banner func(childComplexity int) int
 		Events func(childComplexity int) int
 		ID     func(childComplexity int) int
@@ -77,6 +83,7 @@ type ComplexityRoot struct {
 		CreateTree     func(childComplexity int, input model.NewTree) int
 		MultipleUpload func(childComplexity int, parentID string, files []*graphql.Upload) int
 		SingleUpload   func(childComplexity int, parentID string, file graphql.Upload) int
+		UpdateMeadow   func(childComplexity int, id string, input model.MeadowInput) int
 		UpdateTree     func(childComplexity int, id string, input model.TreeInput) int
 	}
 
@@ -105,6 +112,7 @@ type MeadowResolver interface {
 }
 type MutationResolver interface {
 	CreateMeadow(ctx context.Context, input model.NewMeadow) (*model.Meadow, error)
+	UpdateMeadow(ctx context.Context, id string, input model.MeadowInput) (*model.Meadow, error)
 	CreateTree(ctx context.Context, input model.NewTree) (*model.Tree, error)
 	UpdateTree(ctx context.Context, id string, input model.TreeInput) (*model.Tree, error)
 	CreateEvent(ctx context.Context, input model.NewEvent) (*model.Event, error)
@@ -141,6 +149,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	ec := executionContext{nil, e, 0, 0, nil}
 	_ = ec
 	switch typeName + "." + field {
+
+	case "Coords.lang":
+		if e.complexity.Coords.Lang == nil {
+			break
+		}
+
+		return e.complexity.Coords.Lang(childComplexity), true
+
+	case "Coords.lat":
+		if e.complexity.Coords.Lat == nil {
+			break
+		}
+
+		return e.complexity.Coords.Lat(childComplexity), true
 
 	case "Event.description":
 		if e.complexity.Event.Description == nil {
@@ -197,6 +219,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.File.Path(childComplexity), true
+
+	case "Meadow.area":
+		if e.complexity.Meadow.Area == nil {
+			break
+		}
+
+		return e.complexity.Meadow.Area(childComplexity), true
 
 	case "Meadow.banner":
 		if e.complexity.Meadow.Banner == nil {
@@ -292,6 +321,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.SingleUpload(childComplexity, args["parentID"].(string), args["file"].(graphql.Upload)), true
+
+	case "Mutation.updateMeadow":
+		if e.complexity.Mutation.UpdateMeadow == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateMeadow_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateMeadow(childComplexity, args["id"].(string), args["input"].(model.MeadowInput)), true
 
 	case "Mutation.updateTree":
 		if e.complexity.Mutation.UpdateTree == nil {
@@ -410,6 +451,8 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	rc := graphql.GetOperationContext(ctx)
 	ec := executionContext{rc, e, 0, 0, make(chan graphql.DeferredResult)}
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
+		ec.unmarshalInputCoordsInput,
+		ec.unmarshalInputMeadowInput,
 		ec.unmarshalInputNewEvent,
 		ec.unmarshalInputNewMeadow,
 		ec.unmarshalInputNewTree,
@@ -624,6 +667,30 @@ func (ec *executionContext) field_Mutation_singleUpload_args(ctx context.Context
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_updateMeadow_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	var arg1 model.MeadowInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg1, err = ec.unmarshalNMeadowInput2githubᚗcomᚋBurrrYᚋobstwiesenᚑserverᚋgraphᚋmodelᚐMeadowInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg1
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_updateTree_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -760,6 +827,88 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 // endregion ************************** directives.gotpl **************************
 
 // region    **************************** field.gotpl *****************************
+
+func (ec *executionContext) _Coords_lat(ctx context.Context, field graphql.CollectedField, obj *model.Coords) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Coords_lat(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Lat, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*float64)
+	fc.Result = res
+	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Coords_lat(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Coords",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Coords_lang(ctx context.Context, field graphql.CollectedField, obj *model.Coords) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Coords_lang(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Lang, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*float64)
+	fc.Result = res
+	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Coords_lang(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Coords",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
 
 func (ec *executionContext) _Event_id(ctx context.Context, field graphql.CollectedField, obj *model.Event) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Event_id(ctx, field)
@@ -1364,6 +1513,56 @@ func (ec *executionContext) fieldContext_Meadow_banner(ctx context.Context, fiel
 	return fc, nil
 }
 
+func (ec *executionContext) _Meadow_area(ctx context.Context, field graphql.CollectedField, obj *model.Meadow) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Meadow_area(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Area, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Coords)
+	fc.Result = res
+	return ec.marshalNCoords2ᚕᚖgithubᚗcomᚋBurrrYᚋobstwiesenᚑserverᚋgraphᚋmodelᚐCoordsᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Meadow_area(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Meadow",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "lat":
+				return ec.fieldContext_Coords_lat(ctx, field)
+			case "lang":
+				return ec.fieldContext_Coords_lang(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Coords", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Mutation_createMeadow(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Mutation_createMeadow(ctx, field)
 	if err != nil {
@@ -1413,6 +1612,8 @@ func (ec *executionContext) fieldContext_Mutation_createMeadow(ctx context.Conte
 				return ec.fieldContext_Meadow_events(ctx, field)
 			case "banner":
 				return ec.fieldContext_Meadow_banner(ctx, field)
+			case "area":
+				return ec.fieldContext_Meadow_area(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Meadow", field.Name)
 		},
@@ -1425,6 +1626,75 @@ func (ec *executionContext) fieldContext_Mutation_createMeadow(ctx context.Conte
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_createMeadow_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_updateMeadow(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_updateMeadow(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateMeadow(rctx, fc.Args["id"].(string), fc.Args["input"].(model.MeadowInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Meadow)
+	fc.Result = res
+	return ec.marshalNMeadow2ᚖgithubᚗcomᚋBurrrYᚋobstwiesenᚑserverᚋgraphᚋmodelᚐMeadow(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_updateMeadow(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Meadow_id(ctx, field)
+			case "name":
+				return ec.fieldContext_Meadow_name(ctx, field)
+			case "trees":
+				return ec.fieldContext_Meadow_trees(ctx, field)
+			case "events":
+				return ec.fieldContext_Meadow_events(ctx, field)
+			case "banner":
+				return ec.fieldContext_Meadow_banner(ctx, field)
+			case "area":
+				return ec.fieldContext_Meadow_area(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Meadow", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_updateMeadow_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -1806,6 +2076,8 @@ func (ec *executionContext) fieldContext_Query_meadow(ctx context.Context, field
 				return ec.fieldContext_Meadow_events(ctx, field)
 			case "banner":
 				return ec.fieldContext_Meadow_banner(ctx, field)
+			case "area":
+				return ec.fieldContext_Meadow_area(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Meadow", field.Name)
 		},
@@ -1873,6 +2145,8 @@ func (ec *executionContext) fieldContext_Query_meadows(ctx context.Context, fiel
 				return ec.fieldContext_Meadow_events(ctx, field)
 			case "banner":
 				return ec.fieldContext_Meadow_banner(ctx, field)
+			case "area":
+				return ec.fieldContext_Meadow_area(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Meadow", field.Name)
 		},
@@ -4258,6 +4532,74 @@ func (ec *executionContext) fieldContext___Type_specifiedByURL(ctx context.Conte
 
 // region    **************************** input.gotpl *****************************
 
+func (ec *executionContext) unmarshalInputCoordsInput(ctx context.Context, obj interface{}) (model.CoordsInput, error) {
+	var it model.CoordsInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"lat", "lang"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "lat":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("lat"))
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Lat = data
+		case "lang":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("lang"))
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Lang = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputMeadowInput(ctx context.Context, obj interface{}) (model.MeadowInput, error) {
+	var it model.MeadowInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"name", "area"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "name":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Name = data
+		case "area":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("area"))
+			data, err := ec.unmarshalOCoordsInput2ᚕᚖgithubᚗcomᚋBurrrYᚋobstwiesenᚑserverᚋgraphᚋmodelᚐCoordsInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Area = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputNewEvent(ctx context.Context, obj interface{}) (model.NewEvent, error) {
 	var it model.NewEvent
 	asMap := map[string]interface{}{}
@@ -4457,6 +4799,44 @@ func (ec *executionContext) unmarshalInputUploadFile(ctx context.Context, obj in
 
 // region    **************************** object.gotpl ****************************
 
+var coordsImplementors = []string{"Coords"}
+
+func (ec *executionContext) _Coords(ctx context.Context, sel ast.SelectionSet, obj *model.Coords) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, coordsImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Coords")
+		case "lat":
+			out.Values[i] = ec._Coords_lat(ctx, field, obj)
+		case "lang":
+			out.Values[i] = ec._Coords_lang(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
 var eventImplementors = []string{"Event"}
 
 func (ec *executionContext) _Event(ctx context.Context, sel ast.SelectionSet, obj *model.Event) graphql.Marshaler {
@@ -4654,6 +5034,11 @@ func (ec *executionContext) _Meadow(ctx context.Context, sel ast.SelectionSet, o
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "area":
+			out.Values[i] = ec._Meadow_area(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -4699,6 +5084,13 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "createMeadow":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_createMeadow(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "updateMeadow":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_updateMeadow(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
@@ -5370,6 +5762,65 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
+func (ec *executionContext) marshalNCoords2ᚕᚖgithubᚗcomᚋBurrrYᚋobstwiesenᚑserverᚋgraphᚋmodelᚐCoordsᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Coords) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNCoords2ᚖgithubᚗcomᚋBurrrYᚋobstwiesenᚑserverᚋgraphᚋmodelᚐCoords(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNCoords2ᚖgithubᚗcomᚋBurrrYᚋobstwiesenᚑserverᚋgraphᚋmodelᚐCoords(ctx context.Context, sel ast.SelectionSet, v *model.Coords) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._Coords(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNCoordsInput2ᚖgithubᚗcomᚋBurrrYᚋobstwiesenᚑserverᚋgraphᚋmodelᚐCoordsInput(ctx context.Context, v interface{}) (*model.CoordsInput, error) {
+	res, err := ec.unmarshalInputCoordsInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) marshalNEvent2githubᚗcomᚋBurrrYᚋobstwiesenᚑserverᚋgraphᚋmodelᚐEvent(ctx context.Context, sel ast.SelectionSet, v model.Event) graphql.Marshaler {
 	return ec._Event(ctx, sel, &v)
 }
@@ -5572,6 +6023,11 @@ func (ec *executionContext) marshalNMeadow2ᚖgithubᚗcomᚋBurrrYᚋobstwiesen
 		return graphql.Null
 	}
 	return ec._Meadow(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNMeadowInput2githubᚗcomᚋBurrrYᚋobstwiesenᚑserverᚋgraphᚋmodelᚐMeadowInput(ctx context.Context, v interface{}) (model.MeadowInput, error) {
+	res, err := ec.unmarshalInputMeadowInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalNNewEvent2githubᚗcomᚋBurrrYᚋobstwiesenᚑserverᚋgraphᚋmodelᚐNewEvent(ctx context.Context, v interface{}) (model.NewEvent, error) {
@@ -6012,6 +6468,26 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	}
 	res := graphql.MarshalBoolean(*v)
 	return res
+}
+
+func (ec *executionContext) unmarshalOCoordsInput2ᚕᚖgithubᚗcomᚋBurrrYᚋobstwiesenᚑserverᚋgraphᚋmodelᚐCoordsInputᚄ(ctx context.Context, v interface{}) ([]*model.CoordsInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []interface{}
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]*model.CoordsInput, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNCoordsInput2ᚖgithubᚗcomᚋBurrrYᚋobstwiesenᚑserverᚋgraphᚋmodelᚐCoordsInput(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
 }
 
 func (ec *executionContext) marshalOEvent2ᚕᚖgithubᚗcomᚋBurrrYᚋobstwiesenᚑserverᚋgraphᚋmodelᚐEventᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Event) graphql.Marshaler {

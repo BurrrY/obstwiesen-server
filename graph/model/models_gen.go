@@ -6,6 +6,16 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 )
 
+type Coords struct {
+	Lat  *float64 `json:"lat,omitempty"`
+	Lang *float64 `json:"lang,omitempty"`
+}
+
+type CoordsInput struct {
+	Lat  *float64 `json:"lat,omitempty"`
+	Lang *float64 `json:"lang,omitempty"`
+}
+
 type Event struct {
 	ID          string  `json:"id"`
 	ParentID    string  `json:"parentID"`
@@ -22,11 +32,17 @@ type File struct {
 }
 
 type Meadow struct {
-	ID     string   `json:"id"`
-	Name   string   `json:"name"`
-	Trees  []*Tree  `json:"trees"`
-	Events []*Event `json:"events,omitempty"`
-	Banner *File    `json:"banner,omitempty"`
+	ID     string    `json:"id"`
+	Name   string    `json:"name"`
+	Trees  []*Tree   `json:"trees"`
+	Events []*Event  `json:"events,omitempty"`
+	Banner *File     `json:"banner,omitempty"`
+	Area   []*Coords `json:"area"`
+}
+
+type MeadowInput struct {
+	Name string         `json:"name"`
+	Area []*CoordsInput `json:"area,omitempty"`
 }
 
 type Mutation struct {

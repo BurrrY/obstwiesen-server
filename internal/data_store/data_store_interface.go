@@ -1,6 +1,9 @@
 package storage
 
-import "github.com/BurrrY/obstwiesen-server/graph/model"
+import (
+	"context"
+	"github.com/BurrrY/obstwiesen-server/graph/model"
+)
 
 type Storage interface {
 	GetType() string
@@ -14,4 +17,5 @@ type Storage interface {
 	GetEventsOfTree(id string) ([]*model.Event, error)
 	Setup()
 	UpdateTree(id string, input model.TreeInput) (*model.Tree, error)
+	UpdateMeadow(ctx context.Context, id string, input model.MeadowInput) (*model.Meadow, error)
 }

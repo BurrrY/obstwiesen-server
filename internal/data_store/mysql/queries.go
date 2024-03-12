@@ -1,6 +1,8 @@
 package mysql
 
 import (
+	"context"
+	"encoding/json"
 	"github.com/BurrrY/obstwiesen-server/graph/model"
 	log "github.com/sirupsen/logrus"
 	"time"
@@ -12,8 +14,23 @@ func (m stor) StoreMeadow(meadow *model.Meadow) {
 		log.Warning("Error in StoreMeadow: ", err)
 		return
 	}
-
 }
+
+func (m stor) UpdateMeadow(ctx context.Context, id string, input model.MeadowInput) (*model.Meadow, error) {
+
+	jsondata, _ := json.Marshal(input.Area)
+
+	jsonStr := string(jsondata)
+
+	_, err := db.Exec("UPDATE meadows SET name = ?, area = ? WHERE id = ?", input.Name, jsonStr, id)
+	if err != nil {
+		log.Warning("Error in UpdateMeadow: ", err)
+		return nil, err
+	}
+
+	return m.GetMeadowByID(id)
+}
+
 func (m stor) AddEvent(elemnt *model.Event, id string) error {
 	_, err := db.Exec("INSERT INTO events ( id, parent_id, description, title, timestamp) VALUES (?, ?,?,?,?)",
 		elemnt.ID, id, elemnt.Description, elemnt.Title, elemnt.Timestamp)
@@ -68,25 +85,53 @@ func (m stor) GetTreeByID(id string) (*model.Tree, error) {
 
 func (m stor) GetEventsOfTree(id string) ([]*model.Event, error) {
 
-	data := []*model.Event{}
+	var data []*model.Event
 	err := db.Select(&data, "SELECT id, title, description, timestamp FROM events WHERE parent_id = ? ORDER BY timestamp DESC", id)
 
 	return data, err
 }
 
 func (m stor) GetMeadows() ([]*model.Meadow, error) {
-	meadows := []*model.Meadow{}
-	err := db.Select(&meadows, "SELECT id, name FROM meadows ORDER BY name")
+	var meadows []*model.Meadow
+
+	var raw []*GetMeadow
+	err := db.Select(&raw, "SELECT id, name, area FROM meadows ORDER BY name")
+
+	for _, meadow := range raw {
+		meadows = append(meadows, toMeadowModel(meadow))
+	}
 
 	return meadows, err
 }
 
+func toMeadowModel(meadow *GetMeadow) *model.Meadow {
+
+	data := &model.Meadow{
+		ID:   meadow.ID,
+		Name: meadow.Name,
+		Area: nil,
+	}
+	if meadow.Area != nil {
+		jsonString := *meadow.Area
+		if len(jsonString) > 0 {
+			err := json.Unmarshal([]byte(jsonString), &data.Area)
+			if err != nil {
+				return nil
+			}
+		}
+	}
+	return data
+
+}
+
 func (m stor) GetMeadowByID(id string) (*model.Meadow, error) {
-	meadow := model.Meadow{}
-	err := db.Get(&meadow, "SELECT id, name FROM meadows WHERE id = ?", id)
+
+	raw := &GetMeadow{}
+
+	err := db.Get(raw, "SELECT id, name, area FROM meadows WHERE id = ?", id)
 	if err != nil {
 		log.Warning("GetMeadowByID", err)
 	}
 
-	return &meadow, err
+	return toMeadowModel(raw), err
 }

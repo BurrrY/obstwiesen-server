@@ -6,7 +6,6 @@ package graph
 
 import (
 	"context"
-
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/BurrrY/obstwiesen-server/graph/model"
 	"github.com/BurrrY/obstwiesen-server/internal/config"
@@ -49,6 +48,11 @@ func (r *mutationResolver) CreateMeadow(ctx context.Context, input model.NewMead
 	}
 	storage.StoreMeadow(meadow)
 	return meadow, nil
+}
+
+// UpdateMeadow is the resolver for the updateMeadow field.
+func (r *mutationResolver) UpdateMeadow(ctx context.Context, id string, input model.MeadowInput) (*model.Meadow, error) {
+	return storage.UpdateMeadow(ctx, id, input)
 }
 
 // CreateTree is the resolver for the createTree field.

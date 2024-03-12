@@ -6,7 +6,24 @@ type Meadow {
   trees: [Tree!]!
   events: [Event!]
   banner: File
+  area: [Coords!]!
 }
+
+type Coords {
+  lat: Float
+  lang: Float
+}
+
+input MeadowInput {
+  name: String!
+  area: [CoordsInput!]
+}
+
+input CoordsInput {
+  lat: Float
+  lang: Float
+}
+
 
 type Tree {
   id: ID!
@@ -65,6 +82,7 @@ input UploadFile {
 
 type Mutation {
   createMeadow(input: NewMeadow!): Meadow!
+  updateMeadow(id: ID!, input: MeadowInput!): Meadow!
   createTree(input: NewTree!): Tree!
   updateTree(id: ID!, input: TreeInput!): Tree!
   createEvent(input: NewEvent!): Event!

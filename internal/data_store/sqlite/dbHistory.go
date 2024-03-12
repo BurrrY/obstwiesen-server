@@ -36,6 +36,7 @@ alter table trees
 );
 
 `,
+
 	`alter table events
     add title TEXT;
 
@@ -45,6 +46,10 @@ alter table events
 alter table events
     add timestamp TEXT;
 
+`,
+
+	`alter table meadows
+    add area TEXT;
 `,
 }
 
