@@ -67,7 +67,7 @@ func (m stor) UpdateTree(id string, input model.TreeInput) (*model.Tree, error) 
 func (m stor) GetTreesOfMeadow(id string) ([]*model.Tree, error) {
 
 	trees := []*model.Tree{}
-	err := db.Select(&trees, "SELECT id, name FROM trees WHERE meadow_id = ? ORDER BY name", id)
+	err := db.Select(&trees, "SELECT id, name, lang, lat FROM trees WHERE meadow_id = ? ORDER BY name", id)
 
 	return trees, err
 }
