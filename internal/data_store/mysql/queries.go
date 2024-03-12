@@ -38,7 +38,7 @@ func (m stor) AddTree(tree *model.Tree, id string) {
 func (m stor) GetTreesOfMeadow(id string) ([]*model.Tree, error) {
 
 	trees := []*model.Tree{}
-	err := db.Select(&trees, "SELECT id, name FROM trees WHERE meadow_id = ?", id)
+	err := db.Select(&trees, "SELECT id, name FROM trees WHERE meadow_id = ? ORDER BY name", id)
 
 	return trees, err
 }
@@ -64,7 +64,7 @@ func (m stor) GetEventsOfTree(id string) ([]*model.Event, error) {
 
 func (m stor) GetMeadows() ([]*model.Meadow, error) {
 	meadows := []*model.Meadow{}
-	err := db.Select(&meadows, "SELECT id, name FROM meadows")
+	err := db.Select(&meadows, "SELECT id, name FROM meadows ORDER BY name")
 
 	return meadows, err
 }
