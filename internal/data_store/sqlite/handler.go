@@ -2,6 +2,7 @@ package sqlite
 
 import (
 	"errors"
+	"github.com/BurrrY/obstwiesen-server/graph/model"
 	"github.com/BurrrY/obstwiesen-server/internal/config"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3"
@@ -13,6 +14,11 @@ type stor struct {
 	ConnectionString string
 	ConnectionError  error
 	SetupDone        bool
+}
+
+func (m stor) UpdateTree(id string, input model.TreeInput) (*model.Tree, error) {
+	//TODO implement me
+	panic("implement me")
 }
 
 func (m stor) Setup() {

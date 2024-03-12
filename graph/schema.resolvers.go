@@ -6,7 +6,6 @@ package graph
 
 import (
 	"context"
-	"strings"
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/BurrrY/obstwiesen-server/graph/model"
@@ -63,6 +62,11 @@ func (r *mutationResolver) CreateTree(ctx context.Context, input model.NewTree) 
 
 	storage.AddTree(tree, input.MeadowID)
 	return tree, nil
+}
+
+// UpdateTree is the resolver for the updateTree field.
+func (r *mutationResolver) UpdateTree(ctx context.Context, id string, input model.TreeInput) (*model.Tree, error) {
+	return storage.UpdateTree(id, input)
 }
 
 // CreateEvent is the resolver for the createEvent field.
@@ -197,28 +201,3 @@ type meadowResolver struct{ *Resolver }
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
 type treeResolver struct{ *Resolver }
-
-// !!! WARNING !!!
-// The code below was going to be deleted when updating resolvers. It has been copied here so you have
-// one last chance to move it out of harms way if you want. There are two reasons this happens:
-//   - When renaming or deleting a resolver the old code will be put in here. You can safely delete
-//     it when you're done.
-//   - You have helper methods in this file. Move them out to keep these resolver files clean.
-func storeFile(file *graphql.Upload, eventID string) (error, string) {
-	fileID, _ := gonanoid.New()
-
-	idx := strings.LastIndex(file.Filename, ".")
-	ending := file.Filename[idx:]
-	log.Debug("Filename: " + file.Filename)
-	log.Debug("End: ", ending)
-	err, newPath := filestore.StoreFile(file, eventID, fileID+ending)
-	return err, newPath
-}
-func (r *queryResolver) SingleUpload(ctx context.Context, file graphql.Upload) (bool, error) {
-	log.Info("received file ", file.File)
-	return true, nil
-}
-func (r *queryResolver) MultipleUpload(ctx context.Context, parentID string, req []*model.UploadFile) ([]*model.File, error) {
-	log.Info("received file ", req)
-	return nil, nil
-}

@@ -35,6 +35,18 @@ func (m stor) AddTree(tree *model.Tree, id string) {
 
 }
 
+func (m stor) UpdateTree(id string, input model.TreeInput) (*model.Tree, error) {
+	_, err := db.Exec("UPDATE trees SET name = ?, lat = ?, lang = ? WHERE id = ?",
+		input.Name, input.Lat, input.Lang, id)
+
+	if err != nil {
+		log.Warning("Error in AddTree: ", err)
+		return nil, err
+	}
+
+	return m.GetTreeByID(id)
+}
+
 func (m stor) GetTreesOfMeadow(id string) ([]*model.Tree, error) {
 
 	trees := []*model.Tree{}

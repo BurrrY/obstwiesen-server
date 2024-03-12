@@ -13,4 +13,5 @@ type Storage interface {
 	AddEvent(elemnt *model.Event, id string) error
 	GetEventsOfTree(id string) ([]*model.Event, error)
 	Setup()
+	UpdateTree(id string, input model.TreeInput) (*model.Tree, error)
 }

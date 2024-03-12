@@ -61,6 +61,12 @@ type Tree struct {
 	Banner *File    `json:"banner,omitempty"`
 }
 
+type TreeInput struct {
+	Name string   `json:"name"`
+	Lat  *float64 `json:"lat,omitempty"`
+	Lang *float64 `json:"lang,omitempty"`
+}
+
 // The `UploadFile` type, represents the request for uploading a file with a certain payload.
 type UploadFile struct {
 	ID   int            `json:"id"`

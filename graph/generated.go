@@ -77,6 +77,7 @@ type ComplexityRoot struct {
 		CreateTree     func(childComplexity int, input model.NewTree) int
 		MultipleUpload func(childComplexity int, parentID string, files []*graphql.Upload) int
 		SingleUpload   func(childComplexity int, parentID string, file graphql.Upload) int
+		UpdateTree     func(childComplexity int, id string, input model.TreeInput) int
 	}
 
 	Query struct {
@@ -105,6 +106,7 @@ type MeadowResolver interface {
 type MutationResolver interface {
 	CreateMeadow(ctx context.Context, input model.NewMeadow) (*model.Meadow, error)
 	CreateTree(ctx context.Context, input model.NewTree) (*model.Tree, error)
+	UpdateTree(ctx context.Context, id string, input model.TreeInput) (*model.Tree, error)
 	CreateEvent(ctx context.Context, input model.NewEvent) (*model.Event, error)
 	SingleUpload(ctx context.Context, parentID string, file graphql.Upload) (*model.File, error)
 	MultipleUpload(ctx context.Context, parentID string, files []*graphql.Upload) ([]*model.File, error)
@@ -291,6 +293,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.SingleUpload(childComplexity, args["parentID"].(string), args["file"].(graphql.Upload)), true
 
+	case "Mutation.updateTree":
+		if e.complexity.Mutation.UpdateTree == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateTree_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateTree(childComplexity, args["id"].(string), args["input"].(model.TreeInput)), true
+
 	case "Query.events":
 		if e.complexity.Query.Events == nil {
 			break
@@ -399,6 +413,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputNewEvent,
 		ec.unmarshalInputNewMeadow,
 		ec.unmarshalInputNewTree,
+		ec.unmarshalInputTreeInput,
 		ec.unmarshalInputUploadFile,
 	)
 	first := true
@@ -606,6 +621,30 @@ func (ec *executionContext) field_Mutation_singleUpload_args(ctx context.Context
 		}
 	}
 	args["file"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateTree_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNID2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	var arg1 model.TreeInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg1, err = ec.unmarshalNTreeInput2githubᚗcomᚋBurrrYᚋobstwiesenᚑserverᚋgraphᚋmodelᚐTreeInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg1
 	return args, nil
 }
 
@@ -1455,6 +1494,75 @@ func (ec *executionContext) fieldContext_Mutation_createTree(ctx context.Context
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_createTree_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_updateTree(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_updateTree(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateTree(rctx, fc.Args["id"].(string), fc.Args["input"].(model.TreeInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Tree)
+	fc.Result = res
+	return ec.marshalNTree2ᚖgithubᚗcomᚋBurrrYᚋobstwiesenᚑserverᚋgraphᚋmodelᚐTree(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_updateTree(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Tree_id(ctx, field)
+			case "name":
+				return ec.fieldContext_Tree_name(ctx, field)
+			case "lat":
+				return ec.fieldContext_Tree_lat(ctx, field)
+			case "lang":
+				return ec.fieldContext_Tree_lang(ctx, field)
+			case "events":
+				return ec.fieldContext_Tree_events(ctx, field)
+			case "banner":
+				return ec.fieldContext_Tree_banner(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Tree", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_updateTree_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -4266,6 +4374,47 @@ func (ec *executionContext) unmarshalInputNewTree(ctx context.Context, obj inter
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputTreeInput(ctx context.Context, obj interface{}) (model.TreeInput, error) {
+	var it model.TreeInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"name", "lat", "lang"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "name":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Name = data
+		case "lat":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("lat"))
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Lat = data
+		case "lang":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("lang"))
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Lang = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputUploadFile(ctx context.Context, obj interface{}) (model.UploadFile, error) {
 	var it model.UploadFile
 	asMap := map[string]interface{}{}
@@ -4557,6 +4706,13 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "createTree":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_createTree(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "updateTree":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_updateTree(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
@@ -5504,6 +5660,11 @@ func (ec *executionContext) marshalNTree2ᚖgithubᚗcomᚋBurrrYᚋobstwiesen�
 		return graphql.Null
 	}
 	return ec._Tree(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNTreeInput2githubᚗcomᚋBurrrYᚋobstwiesenᚑserverᚋgraphᚋmodelᚐTreeInput(ctx context.Context, v interface{}) (model.TreeInput, error) {
+	res, err := ec.unmarshalInputTreeInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalNUpload2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚐUpload(ctx context.Context, v interface{}) (graphql.Upload, error) {

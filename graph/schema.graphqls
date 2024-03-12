@@ -1,8 +1,4 @@
-# GraphQL schema example
-#
-# https://gqlgen.com/getting-started/
 scalar Upload
-
 
 type Meadow {
   id: ID!
@@ -19,6 +15,12 @@ type Tree {
   lang: Float
   events: [Event!]
   banner: File
+}
+
+input TreeInput {
+  name: String!
+  lat: Float
+  lang: Float
 }
 
 type Event {
@@ -64,6 +66,7 @@ input UploadFile {
 type Mutation {
   createMeadow(input: NewMeadow!): Meadow!
   createTree(input: NewTree!): Tree!
+  updateTree(id: ID!, input: TreeInput!): Tree!
   createEvent(input: NewEvent!): Event!
   singleUpload(parentID: ID!, file: Upload!): File!
   multipleUpload(parentID: ID!, files: [Upload!]!): [File!]!
