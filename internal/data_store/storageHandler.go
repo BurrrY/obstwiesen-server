@@ -3,7 +3,6 @@ package storage
 import (
 	"github.com/BurrrY/obstwiesen-server/internal/config"
 	"github.com/BurrrY/obstwiesen-server/internal/data_store/mysql"
-	"github.com/BurrrY/obstwiesen-server/internal/data_store/sqlite"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
@@ -13,9 +12,12 @@ func GetProvider() (*Storage, error) {
 
 	dbProvider := viper.GetString(config.DB_PROVIDER)
 
+	/* DEPRECATED
 	if dbProvider == "sqlite" {
 		result = &sqlite.Connection
-	} else if dbProvider == "mysql" {
+	} else*/
+
+	if dbProvider == "mysql" {
 		result = &mysql.Connection
 	} else {
 		log.WithFields(log.Fields{

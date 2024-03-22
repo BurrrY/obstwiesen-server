@@ -18,4 +18,7 @@ type Storage interface {
 	Setup()
 	UpdateTree(id string, input model.TreeInput) (*model.Tree, error)
 	UpdateMeadow(ctx context.Context, id string, input model.MeadowInput) (*model.Meadow, error)
+	AddVariety(elemnt *model.Variety) error
+	GetVarieties(ctx context.Context) ([]*model.Variety, error)
+	GetVarietyOfTree(id string) (*model.Variety, error)
 }

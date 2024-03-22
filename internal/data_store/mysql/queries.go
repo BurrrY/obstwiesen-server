@@ -16,6 +16,16 @@ func (m stor) StoreMeadow(meadow *model.Meadow) {
 	}
 }
 
+func (m stor) AddVariety(elemnt *model.Variety) error {
+	_, err := db.Exec("INSERT INTO varieties ( id, name, parent) VALUES (?, ?, ?)", elemnt.ID, elemnt.Name, elemnt.Parent)
+	if err != nil {
+		log.Warning("Error in AddVariety: ", err)
+		return err
+	}
+
+	return nil
+}
+
 func (m stor) UpdateMeadow(ctx context.Context, id string, input model.MeadowInput) (*model.Meadow, error) {
 
 	jsondata, _ := json.Marshal(input.Area)
@@ -53,8 +63,8 @@ func (m stor) AddTree(tree *model.Tree, id string) {
 }
 
 func (m stor) UpdateTree(id string, input model.TreeInput) (*model.Tree, error) {
-	_, err := db.Exec("UPDATE trees SET name = ?, lat = ?, lang = ? WHERE id = ?",
-		input.Name, input.Lat, input.Lang, id)
+	_, err := db.Exec("UPDATE trees SET name = coalesce(?, name),lat = coalesce(?, lat), lang = coalesce(?, lang), variety = coalesce(?, variety) WHERE id = ?",
+		input.Name, input.Lat, input.Lang, input.Variety, id)
 
 	if err != nil {
 		log.Warning("Error in AddTree: ", err)
@@ -62,6 +72,23 @@ func (m stor) UpdateTree(id string, input model.TreeInput) (*model.Tree, error) 
 	}
 
 	return m.GetTreeByID(id)
+}
+
+func (m stor) GetVarietyOfTree(id string) (*model.Variety, error) {
+
+	d := &model.Variety{}
+	err := db.Get(d, "SELECT v.* FROM varieties v JOIN trees t ON t.variety = v.id AND t.id = ?", id)
+	log.Info("Variety!", d, err)
+	if err != nil {
+		if err.Error() == "sql: no rows in result set" {
+			return nil, nil
+		} else {
+			log.Warning("GetVarietyOfTree", err)
+		}
+
+	}
+
+	return d, err
 }
 
 func (m stor) GetTreesOfMeadow(id string) ([]*model.Tree, error) {
@@ -102,6 +129,14 @@ func (m stor) GetMeadows() ([]*model.Meadow, error) {
 	}
 
 	return meadows, err
+}
+
+func (m stor) GetVarieties(ctx context.Context) ([]*model.Variety, error) {
+
+	var raw []*model.Variety
+	err := db.Select(&raw, "SELECT id, name, parent FROM varieties ORDER BY name")
+
+	return raw, err
 }
 
 func toMeadowModel(meadow *GetMeadow) *model.Meadow {

@@ -97,3 +97,5 @@ models:
         resolver: true
       banner:
         resolver: true
+      variety:
+        resolver: true
