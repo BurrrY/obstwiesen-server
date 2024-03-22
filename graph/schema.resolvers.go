@@ -6,6 +6,8 @@ package graph
 
 import (
 	"context"
+	"fmt"
+
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/BurrrY/obstwiesen-server/graph/model"
 	"github.com/BurrrY/obstwiesen-server/internal/config"
@@ -119,6 +121,11 @@ func (r *mutationResolver) MultipleUpload(ctx context.Context, parentID string, 
 	}, nil
 }
 
+// CreateVariety is the resolver for the createVariety field.
+func (r *mutationResolver) CreateVariety(ctx context.Context, input model.VarietyInput) (*model.Variety, error) {
+	panic(fmt.Errorf("not implemented: CreateVariety - createVariety"))
+}
+
 // Meadow is the resolver for the meadow field.
 func (r *queryResolver) Meadow(ctx context.Context, meadowID string) (*model.Meadow, error) {
 	var meadow *model.Meadow
@@ -132,6 +139,11 @@ func (r *queryResolver) Meadows(ctx context.Context) ([]*model.Meadow, error) {
 	var meadows []*model.Meadow
 	meadows, err := storage.GetMeadows()
 	return meadows, err
+}
+
+// Varieties is the resolver for the varieties field.
+func (r *queryResolver) Varieties(ctx context.Context) ([]*model.Variety, error) {
+	panic(fmt.Errorf("not implemented: Varieties - varieties"))
 }
 
 // Trees is the resolver for the trees field.

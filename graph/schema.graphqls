@@ -24,6 +24,15 @@ input CoordsInput {
   lang: Float
 }
 
+type Variety {
+  id: ID!
+  name: String!
+  parent: ID!
+}
+input varietyInput {
+  name: String!
+  parent: ID
+}
 
 type Tree {
   id: ID!
@@ -32,12 +41,14 @@ type Tree {
   lang: Float
   events: [Event!]
   banner: File
+  variety: Variety
 }
 
 input TreeInput {
   name: String!
   lat: Float
   lang: Float
+  variety: ID
 }
 
 type Event {
@@ -88,11 +99,14 @@ type Mutation {
   createEvent(input: NewEvent!): Event!
   singleUpload(parentID: ID!, file: Upload!): File!
   multipleUpload(parentID: ID!, files: [Upload!]!): [File!]!
+
+  createVariety(input: varietyInput!): Variety!
 }
 
 type Query {
   meadow(meadow_id: ID!): Meadow
   meadows: [Meadow!]!
+  varieties: [Variety!]!
   trees(meadow_id: String!): [Tree!]!
   tree(tree_id: ID!): Tree
   events(tree_id: String!): [Event!]!

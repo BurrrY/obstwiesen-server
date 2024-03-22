@@ -69,22 +69,35 @@ type Query struct {
 }
 
 type Tree struct {
-	ID     string   `json:"id"`
-	Name   string   `json:"name"`
-	Lat    *float64 `json:"lat,omitempty"`
-	Lang   *float64 `json:"lang,omitempty"`
-	Events []*Event `json:"events,omitempty"`
-	Banner *File    `json:"banner,omitempty"`
+	ID      string   `json:"id"`
+	Name    string   `json:"name"`
+	Lat     *float64 `json:"lat,omitempty"`
+	Lang    *float64 `json:"lang,omitempty"`
+	Events  []*Event `json:"events,omitempty"`
+	Banner  *File    `json:"banner,omitempty"`
+	Variety *Variety `json:"variety,omitempty"`
 }
 
 type TreeInput struct {
-	Name string   `json:"name"`
-	Lat  *float64 `json:"lat,omitempty"`
-	Lang *float64 `json:"lang,omitempty"`
+	Name    string   `json:"name"`
+	Lat     *float64 `json:"lat,omitempty"`
+	Lang    *float64 `json:"lang,omitempty"`
+	Variety *string  `json:"variety,omitempty"`
 }
 
 // The `UploadFile` type, represents the request for uploading a file with a certain payload.
 type UploadFile struct {
 	ID   int            `json:"id"`
 	File graphql.Upload `json:"file"`
+}
+
+type Variety struct {
+	ID     string `json:"id"`
+	Name   string `json:"name"`
+	Parent string `json:"parent"`
+}
+
+type VarietyInput struct {
+	Name   string  `json:"name"`
+	Parent *string `json:"parent,omitempty"`
 }

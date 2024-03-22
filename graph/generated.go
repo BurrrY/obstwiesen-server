@@ -81,6 +81,7 @@ type ComplexityRoot struct {
 		CreateEvent    func(childComplexity int, input model.NewEvent) int
 		CreateMeadow   func(childComplexity int, input model.NewMeadow) int
 		CreateTree     func(childComplexity int, input model.NewTree) int
+		CreateVariety  func(childComplexity int, input model.VarietyInput) int
 		MultipleUpload func(childComplexity int, parentID string, files []*graphql.Upload) int
 		SingleUpload   func(childComplexity int, parentID string, file graphql.Upload) int
 		UpdateMeadow   func(childComplexity int, id string, input model.MeadowInput) int
@@ -88,20 +89,28 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		Events  func(childComplexity int, treeID string) int
-		Meadow  func(childComplexity int, meadowID string) int
-		Meadows func(childComplexity int) int
-		Tree    func(childComplexity int, treeID string) int
-		Trees   func(childComplexity int, meadowID string) int
+		Events    func(childComplexity int, treeID string) int
+		Meadow    func(childComplexity int, meadowID string) int
+		Meadows   func(childComplexity int) int
+		Tree      func(childComplexity int, treeID string) int
+		Trees     func(childComplexity int, meadowID string) int
+		Varieties func(childComplexity int) int
 	}
 
 	Tree struct {
-		Banner func(childComplexity int) int
-		Events func(childComplexity int) int
+		Banner  func(childComplexity int) int
+		Events  func(childComplexity int) int
+		ID      func(childComplexity int) int
+		Lang    func(childComplexity int) int
+		Lat     func(childComplexity int) int
+		Name    func(childComplexity int) int
+		Variety func(childComplexity int) int
+	}
+
+	Variety struct {
 		ID     func(childComplexity int) int
-		Lang   func(childComplexity int) int
-		Lat    func(childComplexity int) int
 		Name   func(childComplexity int) int
+		Parent func(childComplexity int) int
 	}
 }
 
@@ -118,10 +127,12 @@ type MutationResolver interface {
 	CreateEvent(ctx context.Context, input model.NewEvent) (*model.Event, error)
 	SingleUpload(ctx context.Context, parentID string, file graphql.Upload) (*model.File, error)
 	MultipleUpload(ctx context.Context, parentID string, files []*graphql.Upload) ([]*model.File, error)
+	CreateVariety(ctx context.Context, input model.VarietyInput) (*model.Variety, error)
 }
 type QueryResolver interface {
 	Meadow(ctx context.Context, meadowID string) (*model.Meadow, error)
 	Meadows(ctx context.Context) ([]*model.Meadow, error)
+	Varieties(ctx context.Context) ([]*model.Variety, error)
 	Trees(ctx context.Context, meadowID string) ([]*model.Tree, error)
 	Tree(ctx context.Context, treeID string) (*model.Tree, error)
 	Events(ctx context.Context, treeID string) ([]*model.Event, error)
@@ -298,6 +309,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.CreateTree(childComplexity, args["input"].(model.NewTree)), true
 
+	case "Mutation.createVariety":
+		if e.complexity.Mutation.CreateVariety == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createVariety_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateVariety(childComplexity, args["input"].(model.VarietyInput)), true
+
 	case "Mutation.multipleUpload":
 		if e.complexity.Mutation.MultipleUpload == nil {
 			break
@@ -401,6 +424,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.Trees(childComplexity, args["meadow_id"].(string)), true
 
+	case "Query.varieties":
+		if e.complexity.Query.Varieties == nil {
+			break
+		}
+
+		return e.complexity.Query.Varieties(childComplexity), true
+
 	case "Tree.banner":
 		if e.complexity.Tree.Banner == nil {
 			break
@@ -443,6 +473,34 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Tree.Name(childComplexity), true
 
+	case "Tree.variety":
+		if e.complexity.Tree.Variety == nil {
+			break
+		}
+
+		return e.complexity.Tree.Variety(childComplexity), true
+
+	case "Variety.id":
+		if e.complexity.Variety.ID == nil {
+			break
+		}
+
+		return e.complexity.Variety.ID(childComplexity), true
+
+	case "Variety.name":
+		if e.complexity.Variety.Name == nil {
+			break
+		}
+
+		return e.complexity.Variety.Name(childComplexity), true
+
+	case "Variety.parent":
+		if e.complexity.Variety.Parent == nil {
+			break
+		}
+
+		return e.complexity.Variety.Parent(childComplexity), true
+
 	}
 	return 0, false
 }
@@ -458,6 +516,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputNewTree,
 		ec.unmarshalInputTreeInput,
 		ec.unmarshalInputUploadFile,
+		ec.unmarshalInputvarietyInput,
 	)
 	first := true
 
@@ -611,6 +670,21 @@ func (ec *executionContext) field_Mutation_createTree_args(ctx context.Context, 
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
 		arg0, err = ec.unmarshalNNewTree2githubᚗcomᚋBurrrYᚋobstwiesenᚑserverᚋgraphᚋmodelᚐNewTree(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_createVariety_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model.VarietyInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNvarietyInput2githubᚗcomᚋBurrrYᚋobstwiesenᚑserverᚋgraphᚋmodelᚐVarietyInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -1404,6 +1478,8 @@ func (ec *executionContext) fieldContext_Meadow_trees(ctx context.Context, field
 				return ec.fieldContext_Tree_events(ctx, field)
 			case "banner":
 				return ec.fieldContext_Tree_banner(ctx, field)
+			case "variety":
+				return ec.fieldContext_Tree_variety(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Tree", field.Name)
 		},
@@ -1752,6 +1828,8 @@ func (ec *executionContext) fieldContext_Mutation_createTree(ctx context.Context
 				return ec.fieldContext_Tree_events(ctx, field)
 			case "banner":
 				return ec.fieldContext_Tree_banner(ctx, field)
+			case "variety":
+				return ec.fieldContext_Tree_variety(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Tree", field.Name)
 		},
@@ -1821,6 +1899,8 @@ func (ec *executionContext) fieldContext_Mutation_updateTree(ctx context.Context
 				return ec.fieldContext_Tree_events(ctx, field)
 			case "banner":
 				return ec.fieldContext_Tree_banner(ctx, field)
+			case "variety":
+				return ec.fieldContext_Tree_variety(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Tree", field.Name)
 		},
@@ -2030,6 +2110,69 @@ func (ec *executionContext) fieldContext_Mutation_multipleUpload(ctx context.Con
 	return fc, nil
 }
 
+func (ec *executionContext) _Mutation_createVariety(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_createVariety(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreateVariety(rctx, fc.Args["input"].(model.VarietyInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*model.Variety)
+	fc.Result = res
+	return ec.marshalNVariety2ᚖgithubᚗcomᚋBurrrYᚋobstwiesenᚑserverᚋgraphᚋmodelᚐVariety(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_createVariety(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Variety_id(ctx, field)
+			case "name":
+				return ec.fieldContext_Variety_name(ctx, field)
+			case "parent":
+				return ec.fieldContext_Variety_parent(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Variety", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_createVariety_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query_meadow(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query_meadow(ctx, field)
 	if err != nil {
@@ -2154,6 +2297,58 @@ func (ec *executionContext) fieldContext_Query_meadows(ctx context.Context, fiel
 	return fc, nil
 }
 
+func (ec *executionContext) _Query_varieties(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_varieties(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Varieties(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Variety)
+	fc.Result = res
+	return ec.marshalNVariety2ᚕᚖgithubᚗcomᚋBurrrYᚋobstwiesenᚑserverᚋgraphᚋmodelᚐVarietyᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_varieties(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Variety_id(ctx, field)
+			case "name":
+				return ec.fieldContext_Variety_name(ctx, field)
+			case "parent":
+				return ec.fieldContext_Variety_parent(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Variety", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query_trees(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query_trees(ctx, field)
 	if err != nil {
@@ -2205,6 +2400,8 @@ func (ec *executionContext) fieldContext_Query_trees(ctx context.Context, field 
 				return ec.fieldContext_Tree_events(ctx, field)
 			case "banner":
 				return ec.fieldContext_Tree_banner(ctx, field)
+			case "variety":
+				return ec.fieldContext_Tree_variety(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Tree", field.Name)
 		},
@@ -2271,6 +2468,8 @@ func (ec *executionContext) fieldContext_Query_tree(ctx context.Context, field g
 				return ec.fieldContext_Tree_events(ctx, field)
 			case "banner":
 				return ec.fieldContext_Tree_banner(ctx, field)
+			case "variety":
+				return ec.fieldContext_Tree_variety(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Tree", field.Name)
 		},
@@ -2754,6 +2953,187 @@ func (ec *executionContext) fieldContext_Tree_banner(ctx context.Context, field 
 				return ec.fieldContext_File_path(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type File", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Tree_variety(ctx context.Context, field graphql.CollectedField, obj *model.Tree) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Tree_variety(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Variety, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.Variety)
+	fc.Result = res
+	return ec.marshalOVariety2ᚖgithubᚗcomᚋBurrrYᚋobstwiesenᚑserverᚋgraphᚋmodelᚐVariety(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Tree_variety(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Tree",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Variety_id(ctx, field)
+			case "name":
+				return ec.fieldContext_Variety_name(ctx, field)
+			case "parent":
+				return ec.fieldContext_Variety_parent(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Variety", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Variety_id(ctx context.Context, field graphql.CollectedField, obj *model.Variety) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Variety_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Variety_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Variety",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Variety_name(ctx context.Context, field graphql.CollectedField, obj *model.Variety) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Variety_name(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Name, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Variety_name(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Variety",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Variety_parent(ctx context.Context, field graphql.CollectedField, obj *model.Variety) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Variety_parent(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Parent, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNID2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Variety_parent(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Variety",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
 		},
 	}
 	return fc, nil
@@ -4723,7 +5103,7 @@ func (ec *executionContext) unmarshalInputTreeInput(ctx context.Context, obj int
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"name", "lat", "lang"}
+	fieldsInOrder := [...]string{"name", "lat", "lang", "variety"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -4751,6 +5131,13 @@ func (ec *executionContext) unmarshalInputTreeInput(ctx context.Context, obj int
 				return it, err
 			}
 			it.Lang = data
+		case "variety":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("variety"))
+			data, err := ec.unmarshalOID2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Variety = data
 		}
 	}
 
@@ -4785,6 +5172,40 @@ func (ec *executionContext) unmarshalInputUploadFile(ctx context.Context, obj in
 				return it, err
 			}
 			it.File = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputvarietyInput(ctx context.Context, obj interface{}) (model.VarietyInput, error) {
+	var it model.VarietyInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"name", "parent"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "name":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Name = data
+		case "parent":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("parent"))
+			data, err := ec.unmarshalOID2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Parent = data
 		}
 	}
 
@@ -5130,6 +5551,13 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "createVariety":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_createVariety(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -5201,6 +5629,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_meadows(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&fs.Invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx,
+					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+			}
+
+			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
+		case "varieties":
+			field := field
+
+			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_varieties(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -5398,6 +5848,57 @@ func (ec *executionContext) _Tree(ctx context.Context, sel ast.SelectionSet, obj
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "variety":
+			out.Values[i] = ec._Tree_variety(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var varietyImplementors = []string{"Variety"}
+
+func (ec *executionContext) _Variety(ctx context.Context, sel ast.SelectionSet, obj *model.Variety) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, varietyImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Variety")
+		case "id":
+			out.Values[i] = ec._Variety_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "name":
+			out.Values[i] = ec._Variety_name(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "parent":
+			out.Values[i] = ec._Variety_parent(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -6191,6 +6692,64 @@ func (ec *executionContext) marshalNUpload2ᚖgithubᚗcomᚋ99designsᚋgqlgen�
 	return res
 }
 
+func (ec *executionContext) marshalNVariety2githubᚗcomᚋBurrrYᚋobstwiesenᚑserverᚋgraphᚋmodelᚐVariety(ctx context.Context, sel ast.SelectionSet, v model.Variety) graphql.Marshaler {
+	return ec._Variety(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNVariety2ᚕᚖgithubᚗcomᚋBurrrYᚋobstwiesenᚑserverᚋgraphᚋmodelᚐVarietyᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Variety) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNVariety2ᚖgithubᚗcomᚋBurrrYᚋobstwiesenᚑserverᚋgraphᚋmodelᚐVariety(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) marshalNVariety2ᚖgithubᚗcomᚋBurrrYᚋobstwiesenᚑserverᚋgraphᚋmodelᚐVariety(ctx context.Context, sel ast.SelectionSet, v *model.Variety) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._Variety(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalN__Directive2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirective(ctx context.Context, sel ast.SelectionSet, v introspection.Directive) graphql.Marshaler {
 	return ec.___Directive(ctx, sel, &v)
 }
@@ -6444,6 +7003,11 @@ func (ec *executionContext) marshalN__TypeKind2string(ctx context.Context, sel a
 	return res
 }
 
+func (ec *executionContext) unmarshalNvarietyInput2githubᚗcomᚋBurrrYᚋobstwiesenᚑserverᚋgraphᚋmodelᚐVarietyInput(ctx context.Context, v interface{}) (model.VarietyInput, error) {
+	res, err := ec.unmarshalInputvarietyInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalOBoolean2bool(ctx context.Context, v interface{}) (bool, error) {
 	res, err := graphql.UnmarshalBoolean(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -6607,6 +7171,22 @@ func (ec *executionContext) marshalOFloat2ᚖfloat64(ctx context.Context, sel as
 	return graphql.WrapContextMarshaler(ctx, res)
 }
 
+func (ec *executionContext) unmarshalOID2ᚖstring(ctx context.Context, v interface{}) (*string, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := graphql.UnmarshalID(v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOID2ᚖstring(ctx context.Context, sel ast.SelectionSet, v *string) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	res := graphql.MarshalID(*v)
+	return res
+}
+
 func (ec *executionContext) marshalOMeadow2ᚖgithubᚗcomᚋBurrrYᚋobstwiesenᚑserverᚋgraphᚋmodelᚐMeadow(ctx context.Context, sel ast.SelectionSet, v *model.Meadow) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
@@ -6673,6 +7253,13 @@ func (ec *executionContext) marshalOUpload2ᚕᚖgithubᚗcomᚋ99designsᚋgqlg
 	}
 
 	return ret
+}
+
+func (ec *executionContext) marshalOVariety2ᚖgithubᚗcomᚋBurrrYᚋobstwiesenᚑserverᚋgraphᚋmodelᚐVariety(ctx context.Context, sel ast.SelectionSet, v *model.Variety) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Variety(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalO__EnumValue2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐEnumValueᚄ(ctx context.Context, sel ast.SelectionSet, v []introspection.EnumValue) graphql.Marshaler {
